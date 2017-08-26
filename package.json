@@ -1,0 +1,21 @@
+{
+  "name": "opol",
+  "version": "0.0.1",
+  "description": "Opinionated Project Overlord - define your project on top of opinionated stacks to remove boilerplate",
+  "main": "index.js",
+  "keywords": [
+    "opol",
+    "project",
+    "project-template"
+  ],
+  "author": "Brian Mearns <https://github.com/mearns>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mearns/opol"
+  },
+  "bugs": {
+    "url": "https://github.com/mearns/opol/issues"
+  },
+  "homepage": "https://github.com/mearns/opol#readme"
+}
