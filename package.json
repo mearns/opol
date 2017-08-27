@@ -27,6 +27,7 @@
   "scripts": {
     "check:lint:js:src": "standard src/**/*.js | snazzy",
     "check:lint:js:test": "standard test/**/*.js | snazzy",
+    "check:lint:js:npmpackagejsonlint-config": "standard ./npmpackagejsonlint.config.js | snazzy",
     "check:lint:js": "npm-run-all --parallel check:lint:js:*",
     "check:lint:package-json": "pjl-cli",
     "check:lint": "npm-run-all --parallel check:lint:*",
