@@ -8,7 +8,10 @@
     "project",
     "project-template"
   ],
-  "author": "Brian Mearns <https://github.com/mearns>",
+  "author": {
+    "name": "Brian Mearns",
+    "url": "https://github.com/mearns"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -17,5 +20,16 @@
   "bugs": {
     "url": "https://github.com/mearns/opol/issues"
   },
-  "homepage": "https://github.com/mearns/opol#readme"
+  "homepage": "https://github.com/mearns/opol#readme",
+  "engines": {
+    "node": ">=5 <9"
+  },
+  "scripts": {
+    "check:lint:package-json": "pjl-cli",
+    "check:lint": "npm-run-all --parallel check:lint:*",
+    "check": "npm-run-all --parallel check:*"
+  },
+  "devDependencies": {
+    "npm-run-all": "4.1.0"
+  }
 }
