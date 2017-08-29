@@ -4,9 +4,9 @@ env:
   - NODE_ENVIRONMENT=production
   - NODE_ENVIRONMENT=development
 
-before_script:
-  - npm install
+cache:
+  directories:
+    - node_modules
 
 script:
-  - npm run verify
-  - npm run compile
+  - npm run build
