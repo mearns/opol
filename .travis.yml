@@ -3,3 +3,10 @@ node_js: [node, 8, 7, 6, 5]
 env:
   - NODE_ENVIRONMENT=production
   - NODE_ENVIRONMENT=development
+
+before_script:
+  - npm install
+
+script:
+  - npm run verify
+  - npm run compile
