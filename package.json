@@ -25,6 +25,7 @@
     "node": ">=5 <9"
   },
   "scripts": {
+    "clean": "rimraf coverage/ .nyc_output/ dist/",
     "check:lint:readme:markdown": "remark --no-stdout README.md",
     "check:lint:readme": "npm-run-all --parallel check:lint:readme:*",
     "check:lint:js:root": "standard ./*.js | snazzy",
@@ -37,8 +38,10 @@
     "check": "npm-run-all --parallel check:*",
     "compile-prod": "babel src/ --out-dir dist/src/",
     "compile-dev": "babel src/ --out-dir dist/src/ --plugins source-map-support --source-maps inline",
-    "test": "mocha ./test/unit/**/*.spec.js",
-    "compile": "if-env NODE_ENV=production && npm run compile-prod || npm run compile-dev"
+    "test": "nyc mocha ./test/unit/**/*.spec.js",
+    "verify": "npm-run-all check test",
+    "compile": "if-env NODE_ENV=production && npm run compile-prod || npm run compile-dev",
+    "build": "npm-run-all clean verify compile"
   },
   "babel": {
     "presets": [
@@ -52,6 +55,25 @@
   "standard": {
     "parser": "babel-eslint"
   },
+  "nyc": {
+    "reporter": [
+      "text",
+      "lcov"
+    ],
+    "require": [
+      "babel-core/register"
+    ],
+    "include": [
+      "src/**"
+    ],
+    "exclude": [],
+    "all": true,
+    "check-coverage": true,
+    "statements": 0,
+    "branches": 0,
+    "functions": 0,
+    "lines": 0
+  },
   "devDependencies": {
     "babel-cli": "6.26.0",
     "babel-eslint": "7.2.3",
@@ -62,7 +84,9 @@
     "if-env": "1.0.0",
     "mocha": "3.5.0",
     "npm-package-json-lint": "2.8.2",
+    "nyc": "11.1.0",
     "remark-cli": "4.0.0",
+    "rimraf": "2.6.1",
     "snazzy": "7.0.0",
     "source-map-support": "0.4.16",
     "standard": "10.0.3"

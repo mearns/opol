@@ -3,3 +3,5 @@ node_modules/
 npmpackagejsonlist.config.js
 src/
 test/
+coverage/
+.nyc_output/
