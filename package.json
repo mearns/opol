@@ -99,7 +99,8 @@
     "stryker-html-reporter": "0.7.0",
     "stryker-mocha-framework": "0.4.0",
     "stryker-mocha-runner": "0.7.0",
-    "travis-lint": "1.0.0"
+    "travis-lint": "1.0.0",
+    "yaml-lint": "1.0.0"
   },
   "dependencies": {}
 }
