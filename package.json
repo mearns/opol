@@ -26,6 +26,9 @@
   },
   "scripts": {
     "clean": "rimraf coverage/ .nyc_output/ dist/",
+    "check:lint:ci:travis-lint": "travis-lint .travis.yml",
+    "check:lint:ci:yaml": "yamllint .travis.yml",
+    "check:lint:ci": "npm-run-all --parallel check:lint:ci:*",
     "check:lint:readme:markdown": "remark --no-stdout README.md",
     "check:lint:readme": "npm-run-all --parallel check:lint:readme:*",
     "check:lint:js:root": "standard ./*.js | snazzy",
@@ -95,7 +98,8 @@
     "stryker-api": "0.8.0",
     "stryker-html-reporter": "0.7.0",
     "stryker-mocha-framework": "0.4.0",
-    "stryker-mocha-runner": "0.7.0"
+    "stryker-mocha-runner": "0.7.0",
+    "travis-lint": "1.0.0"
   },
   "dependencies": {}
 }
