@@ -1,0 +1,12 @@
+language: node_js
+node_js: [node, 8, 7, 6, 5]
+env:
+  - NODE_ENVIRONMENT=production
+  - NODE_ENVIRONMENT=development
+
+cache:
+  directories:
+    - node_modules
+
+script:
+  - npm run build
