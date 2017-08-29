@@ -36,10 +36,11 @@
     "check:lint:package-json": "pjl-cli",
     "check:lint": "npm-run-all --parallel check:lint:*",
     "check": "npm-run-all --parallel check:*",
-    "compile-prod": "babel src/ --out-dir dist/src/",
-    "compile-dev": "babel src/ --out-dir dist/src/ --plugins source-map-support --source-maps inline",
     "test": "nyc mocha ./test/unit/**/*.spec.js",
     "verify": "npm-run-all check test",
+    "mutation-test": "stryker run",
+    "compile-prod": "babel src/ --out-dir dist/src/",
+    "compile-dev": "babel src/ --out-dir dist/src/ --plugins source-map-support --source-maps inline",
     "compile": "if-env NODE_ENV=production && npm run compile-prod || npm run compile-dev",
     "build": "npm-run-all clean verify compile"
   },
@@ -89,7 +90,12 @@
     "rimraf": "2.6.1",
     "snazzy": "7.0.0",
     "source-map-support": "0.4.16",
-    "standard": "10.0.3"
+    "standard": "10.0.3",
+    "stryker": "0.9.0",
+    "stryker-api": "0.8.0",
+    "stryker-html-reporter": "0.7.0",
+    "stryker-mocha-framework": "0.4.0",
+    "stryker-mocha-runner": "0.7.0"
   },
   "dependencies": {}
 }
