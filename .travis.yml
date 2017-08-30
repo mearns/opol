@@ -27,5 +27,5 @@ cache:
     - node_modules
 
 script:
-  - if [ "${TRAVIS_EVENT_TYPE} = "cron" ]; then npm run build; fi
-  - if [ "${TRAVIS_EVENT_TYPE} != "cron" ]; then npm run ${BUILD_STEPS}; fi
+  - if [ "${TRAVIS_EVENT_TYPE}" = "cron" ]; then npm run build; fi
+  - if [ "${TRAVIS_EVENT_TYPE}" != "cron" ]; then npm run ${BUILD_STEPS}; fi
