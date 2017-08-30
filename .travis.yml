@@ -7,10 +7,10 @@ matrix:
         os: [linux, os]
       - node_js: 8
         env:  NODE_ENVIRONMENT=development BUILD_STEPS='compile test'
-        os: [linx, os]
+        os: [linux, os]
       - node_js: 7
         env:  NODE_ENVIRONMENT=production  BUILD_STEPS='compile test'
-        os: [linx, os]
+        os: [linux, os]
       - node_js: 7
         env:  NODE_ENVIRONMENT=development BUILD_STEPS='compile'
       - node_js: 6
