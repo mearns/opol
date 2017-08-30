@@ -37,4 +37,4 @@ cache:
 
 script:
   - if [ "${TRAVIS_EVENT_TYPE}" = "cron" ]; then npm run build; fi
-  - if [ "${TRAVIS_EVENT_TYPE}" != "cron" ]; then for step in ${BUILD_STEPS}; do npm run $step; done; fi
+  - if [ "${TRAVIS_EVENT_TYPE}" != "cron" ]; then for step in ${BUILD_STEPS}; do echo "*** Running build step $step"; npm run $step; done; fi
