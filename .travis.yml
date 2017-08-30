@@ -1,12 +1,40 @@
 language: node_js
-node_js: [node, 8, 7, 6, 5]
-env:
-  - NODE_ENVIRONMENT=production
-  - NODE_ENVIRONMENT=development
+
+matrix:
+  include:
+      - node_js: 8
+        env:  NODE_ENVIRONMENT=production  BUILD_STEPS='build'
+        os: linux
+      - node_js: 8
+        env:  NODE_ENVIRONMENT=production  BUILD_STEPS='build'
+        os: osx
+      - node_js: 8
+        env:  NODE_ENVIRONMENT=development BUILD_STEPS='compile test'
+        os: linux
+      - node_js: 8
+        env:  NODE_ENVIRONMENT=development BUILD_STEPS='compile test'
+        os: osx
+      - node_js: 7
+        env:  NODE_ENVIRONMENT=production  BUILD_STEPS='compile test'
+        os: linux
+      - node_js: 7
+        env:  NODE_ENVIRONMENT=production  BUILD_STEPS='compile test'
+        os: osx
+      - node_js: 7
+        env:  NODE_ENVIRONMENT=development BUILD_STEPS='compile'
+      - node_js: 6
+        env:  NODE_ENVIRONMENT=production  BUILD_STEPS='compile test'
+      - node_js: 6
+        env:  NODE_ENVIRONMENT=development BUILD_STEPS='compile'
+      - node_js: 5
+        env:  NODE_ENVIRONMENT=production  BUILD_STEPS='compile test'
+      - node_js: 5
+        env:  NODE_ENVIRONMENT=development BUILD_STEPS='compile'
 
 cache:
   directories:
     - node_modules
 
 script:
-  - npm run build
+  - if [ "${TRAVIS_EVENT_TYPE}" = "cron" ]; then npm run build; fi
+  - if [ "${TRAVIS_EVENT_TYPE}" != "cron" ]; then npm run ${BUILD_STEPS}; fi
