@@ -24,6 +24,9 @@
   "engines": {
     "node": ">=5 <9"
   },
+  "bin": {
+    "opol": "./dist/src/main.js"
+  },
   "scripts": {
     "clean": "rimraf coverage/ .nyc_output/ dist/",
     "check:lint:ci:travis-lint": "travis-lint .travis.yml",
