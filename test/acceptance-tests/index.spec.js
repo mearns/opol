@@ -14,7 +14,7 @@ chai.use(sinonChai)
 describe('the npm stack', () => {
   it('should generate a package.json file', () => {
     // given
-    const mockJsonFileResource = sinon.spy()
+    const mockJsonFileResource = sinon.stub().returns(() => {})
     const TEST_PROJECT_NAME = 'test-project-123'
     const testConfig = {
       stacks: ['npm'],

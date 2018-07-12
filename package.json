@@ -104,6 +104,8 @@
     "standard": "11.0.1"
   },
   "dependencies": {
-    "lodash.get": "4.4.2"
+    "bluebird": "3.5.1",
+    "lodash.get": "4.4.2",
+    "mz": "2.7.0"
   }
 }
