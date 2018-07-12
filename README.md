@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/mearns/opol.svg?branch=master)](https://travis-ci.org/mearns/opol)
-[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![JavaScript Standard Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
 # Opinionated Project Overlord
 
