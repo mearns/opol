@@ -58,11 +58,11 @@ class Opol {
   }
 
   converge () {
+    // Define an API function for getting a config value.
     const config = (path, defVal) => get(this._config, path, defVal)
-    const resources = Object.keys(this._resources).reduce((acc, resName) => {
-      acc[resName] = new (this._resources[resName])()
-      return acc
-    }, {})
+
+    // Define an API function for getting a resource (instance) by name
+    const resources = {}
     const resourceUsages = []
     const resource = (name) => (...args) => {
       const res = resources[name]
@@ -72,7 +72,19 @@ class Opol {
       res.prepAndValidateInstance(...args)
       resourceUsages.push([name, res, args])
     }
+
+    // Create instances of each resource for this run.
+    Object.keys(this._resources).forEach(resName => {
+      const res = new (this._resources[resName])()
+      // Add a resource method.
+      res.resource = function (name) { return resource(name) }
+      resources[resName] = res
+    }, {})
+
+    // Run the stacks.
     this._stacks.bottomUp(stack => stack.converge({config, resource}))
+
+    // Run executions for all resource usages.
     const resourcePromises = {}
     resourceUsages.forEach(([name, res, args]) => {
       if (!resourcePromises[name]) {
@@ -80,6 +92,8 @@ class Opol {
       }
       resourcePromises[name] = resourcePromises[name].then(() => res.executeInstance(...args))
     })
+
+    // Wait for all executions to complete.
     return Promise.map(Object.keys(resourcePromises), name => resources[name].afterExecute())
   }
 
