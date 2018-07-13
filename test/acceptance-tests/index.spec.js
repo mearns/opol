@@ -5,7 +5,7 @@
 import * as opol from '../../src'
 
 // Support
-import {simpleResource} from '../../src/resource'
+import {Resource, simpleResource} from '../../src/resource'
 import chai, {expect} from 'chai'
 import sinon from 'sinon'
 import sinonChai from 'sinon-chai'
@@ -15,8 +15,8 @@ chai.use(sinonChai)
 describe('the npm stack', () => {
   it('should generate a package.json file', () => {
     // given
-    const mockJsonFileResource = simpleResource('MockJsonFile', sinon.stub().returns(() => {}))
-    console.log('Mock JSON', mockJsonFileResource)
+    const jsonFileSpy = sinon.spy()
+    const MockJsonFileResource = simpleResource('MockJsonFile', jsonFileSpy)
     const TEST_PROJECT_NAME = 'test-project-123'
     const testConfig = {
       stacks: ['npm'],
@@ -26,19 +26,19 @@ describe('the npm stack', () => {
     }
 
     // when
-    // XXX: FIXME: TODO: NEed to wait for converge to settle.
-    opol.converge(testConfig, {
+    return opol.converge(testConfig, {
       provideResources: (provide) => {
-        provide('JsonFile', mockJsonFileResource)
+        provide('JsonFile', MockJsonFileResource)
       }
     })
-
-    // then
-    expect(mockJsonFileResource).to.have.been.calledWith(sinon.match({
-      path: 'package.json',
-      contentBody: {
-        name: TEST_PROJECT_NAME
-      }
-    }))
+      .then(() => {
+        // then
+        expect(jsonFileSpy).to.have.been.calledWith(sinon.match({
+          path: 'package.json',
+          contentBody: {
+            name: TEST_PROJECT_NAME
+          }
+        }))
+      })
   })
 })

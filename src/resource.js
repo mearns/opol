@@ -19,11 +19,10 @@ export function simpleResource (...args) {
     }
   }
   const cls = hack[name]
-  cls.prototype = Object.create(Resource.prototype, {
-    executeInstance: function (...args) {
-      executor(...args)
-    }
-  })
+  cls.prototype = Object.create(Resource.prototype)
+  cls.prototype.executeInstance = function (...args) {
+    executor(...args)
+  }
   cls.prototype.constructor = cls
   return cls
 }

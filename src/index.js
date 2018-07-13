@@ -1,15 +1,12 @@
 import * as defaultResources from './resources/_default'
 import Promise from 'bluebird'
 import {Resource} from './resource'
+import get from 'lodash.get'
 
 const NOOP = () => {}
 const IDENTITY = x => x
 
-export function converge (config, options) {
-  return (new Opol(config, options)).converge()
-}
-
-function getDefaultStack () {
+function getDefaultStack (config) {
   return {
     converge: NOOP,
     provideResources: provide => {
@@ -23,6 +20,10 @@ function getCustomProviderStack (provideResources) {
     provideResources,
     converge: NOOP
   }
+}
+
+export function converge (...args) {
+  return (new Opol(...args)).converge()
 }
 
 class Opol {
@@ -57,6 +58,7 @@ class Opol {
   }
 
   converge () {
+    const config = (path, defVal) => get(this._config, path, defVal)
     const resources = Object.keys(this._resources).reduce((acc, resName) => {
       acc[resName] = new (this._resources[resName])()
       return acc
@@ -70,7 +72,7 @@ class Opol {
       res.prepAndValidateInstance(...args)
       resourceUsages.push([name, res, args])
     }
-    this._stacks.bottomUp(stack => stack.converge({resource}))
+    this._stacks.bottomUp(stack => stack.converge({config, resource}))
     const resourcePromises = {}
     resourceUsages.forEach(([name, res, args]) => {
       if (!resourcePromises[name]) {
