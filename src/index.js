@@ -1,6 +1,6 @@
-import get from 'lodash.get'
 import * as defaultResources from './resources/_default'
 import Promise from 'bluebird'
+import {Resource} from './resource'
 
 const NOOP = () => {}
 const IDENTITY = x => x
@@ -44,12 +44,10 @@ class Opol {
   }
 
   registerResource (name, resource) {
-    this._resources[name] = (registerCallback, ...args) => {
-      const res = resource(...args)
-      if (!res || (typeof res !== 'function')) {
-        throw new Error(`Resource ${name} did not return a callback function as required.`)
-      }
-      registerCallback(res)
+    if (resource.prototype instanceof Resource) {
+      this._resources[name] = resource
+    } else {
+      throw new TypeError(`Resource ${name} must be an instance of 'Resource'`)
     }
   }
 
@@ -59,12 +57,28 @@ class Opol {
   }
 
   converge () {
-    const resourceCallbacks = []
-    const registerCallback = callback => { resourceCallbacks.push(callback) }
-    const resource = (name) => (...args) => { this._resources[name](registerCallback, ...args) }
-    const config = (path, def) => get(this._config, path, def)
-    this._stacks.bottomUp(stack => stack.converge({config, resource}))
-    return Promise.map(resourceCallbacks, cb => cb())
+    const resources = Object.keys(this._resources).reduce((acc, resName) => {
+      acc[resName] = new (this._resources[resName])()
+      return acc
+    }, {})
+    const resourceUsages = []
+    const resource = (name) => (...args) => {
+      const res = resources[name]
+      if (!res) {
+        throw new Error(`No such resource: '${name}'`)
+      }
+      res.prepAndValidateInstance(...args)
+      resourceUsages.push([name, res, args])
+    }
+    this._stacks.bottomUp(stack => stack.converge({resource}))
+    const resourcePromises = {}
+    resourceUsages.forEach(([name, res, args]) => {
+      if (!resourcePromises[name]) {
+        resourcePromises[name] = Promise.method(res.beforeExecute).bind(res)()
+      }
+      resourcePromises[name] = resourcePromises[name].then(() => res.executeInstance(...args))
+    })
+    return Promise.map(Object.keys(resourcePromises), name => resources[name].afterExecute())
   }
 
   loadStack (spec) {

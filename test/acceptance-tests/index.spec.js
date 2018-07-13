@@ -5,6 +5,7 @@
 import * as opol from '../../src'
 
 // Support
+import {simpleResource} from '../../src/resource'
 import chai, {expect} from 'chai'
 import sinon from 'sinon'
 import sinonChai from 'sinon-chai'
@@ -14,7 +15,8 @@ chai.use(sinonChai)
 describe('the npm stack', () => {
   it('should generate a package.json file', () => {
     // given
-    const mockJsonFileResource = sinon.stub().returns(() => {})
+    const mockJsonFileResource = simpleResource('MockJsonFile', sinon.stub().returns(() => {}))
+    console.log('Mock JSON', mockJsonFileResource)
     const TEST_PROJECT_NAME = 'test-project-123'
     const testConfig = {
       stacks: ['npm'],
@@ -24,9 +26,10 @@ describe('the npm stack', () => {
     }
 
     // when
+    // XXX: FIXME: TODO: NEed to wait for converge to settle.
     opol.converge(testConfig, {
       provideResources: (provide) => {
-        provide('jsonFileResource', mockJsonFileResource)
+        provide('JsonFile', mockJsonFileResource)
       }
     })
 
