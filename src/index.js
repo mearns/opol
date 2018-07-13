@@ -62,9 +62,13 @@ class Opol {
     const config = (path, defVal) => get(this._config, path, defVal)
 
     // Define an API function for getting a resource (instance) by name
+    let stage
     const resources = {}
     const resourceUsages = []
     const resource = (name) => (...args) => {
+      if (stage !== 'prep-and-validation') {
+        throw new Error(`Resources cannot be run outside of the prep-and-validation stage (attempted to run resource ${name})`)
+      }
       const res = resources[name]
       if (!res) {
         throw new Error(`No such resource: '${name}'`)
@@ -77,14 +81,17 @@ class Opol {
     Object.keys(this._resources).forEach(resName => {
       const res = new (this._resources[resName])()
       // Add a resource method.
+      // XXX: TODO: Remove this method after p&v
       res.resource = function (name) { return resource(name) }
       resources[resName] = res
     }, {})
 
     // Run the stacks.
+    stage = 'prep-and-validation'
     this._stacks.bottomUp(stack => stack.converge({config, resource}))
 
     // Run executions for all resource usages.
+    stage = 'execution'
     const resourcePromises = {}
     resourceUsages.forEach(([name, res, args]) => {
       if (!resourcePromises[name]) {
