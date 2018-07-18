@@ -81,7 +81,6 @@ class Opol {
     Object.keys(this._resources).forEach(resName => {
       const res = new (this._resources[resName])()
       // Add a resource method.
-      // XXX: TODO: Remove this method after p&v
       res.resource = function (name) { return resource(name) }
       resources[resName] = res
     }, {})
