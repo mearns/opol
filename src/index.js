@@ -32,6 +32,14 @@ function getCustomProviderStack (provideResources) {
   }
 }
 
+function createStateAPIFactory () {
+  const state = {}
+  return () => ({
+    set: (key, value) => (state[key] = value),
+    get: key => state[key]
+  })
+}
+
 function createStacksApi (stacks) {
   const numberedStacks = stacks.map((stack, idx) => [idx, stack])
   const reversedStacks = [...numberedStacks].reverse()
@@ -89,20 +97,17 @@ class Opol {
     }
 
     // Create shared state for each stack.
-    const stateByStackId = {}
+    const stateAPIFactoriesByStackId = {}
     this._stacks.anyOrder((_, stackId) => {
-      stateByStackId[stackId] = {}
+      stateAPIFactoriesByStackId[stackId] = createStateAPIFactory()
     })
 
     // Create instances of each resource for this run.
     Object.keys(this._resources).forEach(resName => {
       const {stackId, Resource} = this._resources[resName]
-      const sharedStackState = stateByStackId[stackId]
-      const stateApi = {
-        set: (key, value) => (sharedStackState[key] = value),
-        get: key => sharedStackState[key]
-      }
+      const stateApi = stateAPIFactoriesByStackId[stackId]()
       const res = new Resource(stateApi)
+      res.state = stateAPIFactoriesByStackId[stackId](stackId)
       // Add a resource method.
       res.resource = function (name) { return resource(name) }
       resources[resName] = res
@@ -110,7 +115,7 @@ class Opol {
 
     // Run the stacks.
     stage = 'prep-and-validation'
-    this._stacks.bottomUp(stack => stack.converge({config, resource}))
+    this._stacks.bottomUp((stack, stackId) => stack.converge({state: stateAPIFactoriesByStackId[stackId](), config, resource}))
 
     // Run executions for all resource usages.
     stage = 'execution'
