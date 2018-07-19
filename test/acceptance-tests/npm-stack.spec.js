@@ -5,7 +5,7 @@
 import * as opol from '../../src'
 
 // Support
-import {Resource, simpleResource} from '../../src/resource'
+import {simpleResource} from '../../src/resource'
 import chai, {expect} from 'chai'
 import sinon from 'sinon'
 import sinonChai from 'sinon-chai'
@@ -18,10 +18,12 @@ describe('the npm stack', () => {
     const jsonFileSpy = sinon.spy()
     const MockJsonFileResource = simpleResource('MockJsonFile', jsonFileSpy)
     const TEST_PROJECT_NAME = 'test-project-123'
+    const TEST_PROJECT_VERSION_STRING = '1.2.3'
     const testConfig = {
       stacks: ['npm'],
       project: {
-        name: TEST_PROJECT_NAME
+        name: TEST_PROJECT_NAME,
+        version: TEST_PROJECT_VERSION_STRING
       }
     }
 
@@ -36,7 +38,8 @@ describe('the npm stack', () => {
         expect(jsonFileSpy).to.have.been.calledWith(sinon.match({
           path: 'package.json',
           contentBody: {
-            name: TEST_PROJECT_NAME
+            name: TEST_PROJECT_NAME,
+            version: TEST_PROJECT_VERSION_STRING
           }
         }))
       })
