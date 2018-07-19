@@ -8,7 +8,8 @@ export function converge ({config, resource}) {
   jsonFile({
     path: 'package.json',
     contentBody: {
-      name: config('project.name')
+      name: config('project.name'),
+      version: config('project.version')
     }
   })
 }
