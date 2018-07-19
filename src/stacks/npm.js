@@ -1,3 +1,9 @@
+import {Resource} from '../resource'
+
+class NpmPackageData extends Resource {
+  prepAndValidateInstance (command, ...args) {
+  }
+}
 
 export function provideResources (provide) {
 

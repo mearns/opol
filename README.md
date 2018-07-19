@@ -24,3 +24,10 @@ executor actually generates the file.
 Or maybe a resource should be an object that provides methods: prep, execute, beforeExecute,
 afterExecute. Then how would the API be provided? It could extend a base class that provides
 it? I think that will work.
+
+## Stacks
+
+### Provisioning Methods
+
+Stacks are expected to implement a `provideResources` method that is used to register resources
+by calling a passed in _provider function_.

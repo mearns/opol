@@ -3,9 +3,16 @@ import Promise from 'bluebird'
 import {Resource} from './resource'
 import get from 'lodash.get'
 
+export function converge (...args) {
+  return (new Opol(...args)).converge()
+}
+
 const NOOP = () => {}
 const IDENTITY = x => x
 
+/**
+ * The default stack provides the default resources.
+ */
 function getDefaultStack (config) {
   return {
     converge: NOOP,
@@ -15,6 +22,9 @@ function getDefaultStack (config) {
   }
 }
 
+/**
+ * A stack that provides resources with the given provisioning function.
+ */
 function getCustomProviderStack (provideResources) {
   return {
     provideResources,
@@ -22,39 +32,40 @@ function getCustomProviderStack (provideResources) {
   }
 }
 
-export function converge (...args) {
-  return (new Opol(...args)).converge()
+function createStacksApi (stacks) {
+  const numberedStacks = stacks.map((stack, idx) => [idx, stack])
+  const reversedStacks = [...numberedStacks].reverse()
+  return {
+    anyOrder: (visitor = IDENTITY) => numberedStacks.map(([stackId, stack]) => visitor(stack, stackId)),
+    topDown: (visitor = IDENTITY) => numberedStacks.map(([stackId, stack]) => visitor(stack, stackId)),
+    bottomUp: (visitor = IDENTITY) => reversedStacks.map(([stackId, stack]) => visitor(stack, stackId))
+  }
 }
 
 class Opol {
   constructor (config, {provideResources = NOOP} = {}) {
     this._config = config
-    const stacks = [
+    this._stacks = createStacksApi([
       getDefaultStack(),
       getCustomProviderStack(provideResources),
       ...((config.stacks || []).map(spec => this.loadStack(spec)))
-    ]
-    const reversedStacks = [...stacks].reverse()
-    this._stacks = {
-      anyOrder: (visitor = IDENTITY) => stacks.map(visitor),
-      topDown: (visitor = IDENTITY) => stacks.map(visitor),
-      bottomUp: (visitor = IDENTITY) => reversedStacks.map(visitor)
-    }
+    ])
     this._resources = {}
     this.loadResourcesFromStacks()
   }
 
-  registerResource (name, resource) {
+  registerResource (stackId, name, resource) {
     if (resource.prototype instanceof Resource) {
-      this._resources[name] = resource
+      this._resources[name] = {stackId, Resource: resource}
     } else {
       throw new TypeError(`Resource ${name} must be an instance of 'Resource'`)
     }
   }
 
   loadResourcesFromStacks () {
-    const provide = (name, resource) => this.registerResource(name, resource)
-    this._stacks.anyOrder(stack => stack.provideResources(provide))
+    this._stacks.anyOrder((stack, stackId) => {
+      stack.provideResources((name, resource) => this.registerResource(stackId, name, resource))
+    })
   }
 
   converge () {
@@ -77,9 +88,21 @@ class Opol {
       resourceUsages.push([name, res, args])
     }
 
+    // Create shared state for each stack.
+    const stateByStackId = {}
+    this._stacks.anyOrder((_, stackId) => {
+      stateByStackId[stackId] = {}
+    })
+
     // Create instances of each resource for this run.
     Object.keys(this._resources).forEach(resName => {
-      const res = new (this._resources[resName])()
+      const {stackId, Resource} = this._resources[resName]
+      const sharedStackState = stateByStackId[stackId]
+      const stateApi = {
+        set: (key, value) => (sharedStackState[key] = value),
+        get: key => sharedStackState[key]
+      }
+      const res = new Resource(stateApi)
       // Add a resource method.
       res.resource = function (name) { return resource(name) }
       resources[resName] = res

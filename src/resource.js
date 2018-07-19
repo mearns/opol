@@ -1,5 +1,9 @@
 
 export class Resource {
+  constructor (stateApi) {
+    this.state = stateApi
+  }
+
   prepAndValidateInstance () { }
 
   beforeExecute () { }
