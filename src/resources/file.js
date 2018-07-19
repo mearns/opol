@@ -12,21 +12,38 @@ export class File extends Resource {
   }
 
   prepAndValidateInstance ({path, content}) {
-    const fileState = this.state.get('files') || {}
+    const fileState = this.state.get('file') || {}
+    const dirState = fileState.createDirs || {}
     const fileWriteState = fileState.write || {}
-    fileWriteState[pathUtil.resolve(path)] = content
+
+    const absPath = pathUtil.resolve(path)
+    const dir = pathUtil.dirname(absPath)
+    dirState[dir] = true
+    fileWriteState[absPath] = {content, dir}
+
     fileState.write = fileWriteState
-    this.state.set('files', fileState)
+    fileState.createDirs = dirState
+    this.state.set('file', fileState)
   }
 
   afterExecute () {
-    const fileState = this.state.get('files') || {}
+    const fileState = this.state.get('file') || {}
+    const dirState = fileState.createDirs || {}
     const fileWriteState = fileState.write || {}
-    return Promise.map(Object.keys(fileWriteState), path => {
-      const _content = fileWriteState[path]
+
+    const dirPromiseCatalog = Object.keys(dirState).reduce((catalog, dirName) => {
+      catalog[dirName] = this.mkdirp(dirName)
+      return catalog
+    }, {})
+
+    const promiseForAllDirs = Promise.all(Object.values(dirPromiseCatalog))
+
+    const promiseForAllFiles = Promise.map(Object.entries(fileWriteState), ([path, {content: _content, dir}]) => {
       const content = (typeof _content === 'function') ? _content() : _content
-      return this.mkdirp(pathUtil.dirname(path))
+      return dirPromiseCatalog[dir]
         .then(() => this.writeFile(path, content))
     })
+
+    return Promise.join(promiseForAllDirs, promiseForAllFiles, () => {})
   }
 }
