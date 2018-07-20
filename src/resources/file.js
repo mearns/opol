@@ -5,8 +5,8 @@ import pathUtil from 'path'
 import Promise from 'bluebird'
 
 export class File extends Resource {
-  constructor ({writeFile = fs.writeFile, mkdirp = fsExtra.mkdirp}) {
-    super()
+  constructor (api, {writeFile = fs.writeFile, mkdirp = fsExtra.mkdirp}) {
+    super(api)
     this.writeFile = writeFile
     this.mkdirp = mkdirp
   }

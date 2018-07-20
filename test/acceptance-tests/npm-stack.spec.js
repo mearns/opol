@@ -19,8 +19,8 @@ describe('the npm stack', () => {
     const mkdirpSpy = sinon.stub().returns(Promise.resolve())
     const writeFileSpy = sinon.stub().returns(Promise.resolve())
     class MockFileResource extends File {
-      constructor () {
-        super({writeFile: writeFileSpy, mkdirp: mkdirpSpy})
+      constructor (api) {
+        super(api, {writeFile: writeFileSpy, mkdirp: mkdirpSpy})
       }
     }
     const TEST_PROJECT_NAME = 'test-project-123'

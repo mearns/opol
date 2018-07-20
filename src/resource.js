@@ -1,7 +1,12 @@
 
 export class Resource {
-  constructor (stateApi) {
-    this.state = stateApi
+  constructor (api) {
+    this.state = api.state
+    this._resourceApi = api.resource
+  }
+
+  resource (name) {
+    return this._resourceApi(name)
   }
 
   prepAndValidateInstance () { }

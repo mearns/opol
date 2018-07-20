@@ -24,7 +24,7 @@ describe('the resource module', () => {
     it('should create a new class whose instances are instances of Resource', () => {
       // when
       const GeneratedResource = resource.simpleResource(() => {})
-      const testResource = new GeneratedResource()
+      const testResource = new GeneratedResource({})
 
       // then
       expect(testResource).to.be.instanceof(GeneratedResource)
@@ -35,7 +35,7 @@ describe('the resource module', () => {
       // given
       const executorSpy = sinon.spy()
       const GeneratedResource = resource.simpleResource(executorSpy)
-      const testResource = new GeneratedResource()
+      const testResource = new GeneratedResource({})
 
       // when
       testResource.executeInstance()

@@ -118,10 +118,7 @@ class Opol {
     Object.keys(this._resources).forEach(resName => {
       const {stackId, Resource} = this._resources[resName]
       const stateApi = stateAPIFactoriesByStackId[stackId]()
-      const res = new Resource(stateApi)
-      res.state = stateAPIFactoriesByStackId[stackId](stackId)
-      // Add a resource method.
-      res.resource = function (name) { return resource(name) }
+      const res = new Resource({state: stateApi, resource})
       resources[resName] = res
     }, {})
 
