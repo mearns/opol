@@ -84,16 +84,28 @@ class Opol {
     let stage
     const resources = {}
     const resourceUsages = []
-    const resource = (name) => (...args) => {
+    const resource = (name) => {
       if (stage !== 'prep-and-validation') {
-        throw new Error(`Resources cannot be run outside of the prep-and-validation stage (attempted to run resource ${name})`)
+        throw new Error(`Resources cannot be accessed outside of the prep-and-validation stage (attempted to access resource ${name})`)
       }
-      const res = resources[name]
-      if (!res) {
-        throw new Error(`No such resource: '${name}'`)
+      if (!(this._resources[name])) {
+        throw new Error(`Unknown resource "${name}"`)
       }
-      res.prepAndValidateInstance(...args)
-      resourceUsages.push([name, res, args])
+
+      const hack = {
+        [name]: function (...args) {
+          if (stage !== 'prep-and-validation') {
+            throw new Error(`Resources cannot be run outside of the prep-and-validation stage (attempted to run resource ${name})`)
+          }
+          const res = resources[name]
+          if (!res) {
+            throw new Error(`Internal error: resoure "${name}" was believed to be available, but is not.`)
+          }
+          res.prepAndValidateInstance(...args)
+          resourceUsages.push([name, res, args])
+        }
+      }
+      return hack[name]
     }
 
     // Create shared state for each stack.
