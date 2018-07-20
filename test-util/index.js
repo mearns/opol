@@ -6,15 +6,6 @@ export function opolTest () {
   return new OpolTest()
 }
 
-const writeFileStub = sinon.stub().returns(Promise.resolve())
-const mkdirpStub = sinon.stub().returns(Promise.resolve())
-
-class StubbedFileResource extends File {
-  constructor (api) {
-    super(api, {writeFile: writeFileStub, mkdirp: mkdirpStub})
-  }
-}
-
 class OpolTest {
   constructor () {
     this._overrideResources = []
