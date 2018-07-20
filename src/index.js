@@ -115,6 +115,7 @@ class Opol {
     })
 
     // Create instances of each resource for this run.
+    stage = 'resource-instantiation'
     Object.keys(this._resources).forEach(resName => {
       const {stackId, Resource} = this._resources[resName]
       const stateApi = stateAPIFactoriesByStackId[stackId]()
