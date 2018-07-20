@@ -67,4 +67,34 @@ describe('the npm stack', () => {
         })
     })
   })
+
+  describe('NpmPackageVersion resource', () => {
+    it('should configure the version property in the generated package.json file', () => {
+      // given
+      const TEST_PACKAGE_NAME = 'test-package-abc'
+      const CONFIGURED_PROJECT_VERSION = '1.2.3'
+      const TEST_PACKAGE_VERSION = '9.8.5'
+
+      // Expect
+      return opolTest()
+        .usingStubbedFileResource()
+        .withStack('npm')
+        .withConfig('project.name', TEST_PACKAGE_NAME)
+        .withConfig('project.version', CONFIGURED_PROJECT_VERSION)
+        .withExerciser(({resource}) => {
+          resource('NpmPackageVersion')(TEST_PACKAGE_VERSION)
+        })
+        .testConverge()
+        .then(({stubbedFileResource: {mkdirpStub, writeFileStub}}) => {
+          expect(mkdirpStub).to.have.been.calledOnceWithExactly(path.resolve('./'))
+          expect(writeFileStub).to.have.been.calledOnceWithExactly(
+            path.resolve('package.json'),
+            JSON.stringify({
+              name: TEST_PACKAGE_NAME,
+              version: TEST_PACKAGE_VERSION
+            }, null, 4)
+          )
+        })
+    })
+  })
 })
