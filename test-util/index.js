@@ -1,6 +1,7 @@
 import * as opol from '../src'
 import sinon from 'sinon'
 import {File} from '../src/resources/file'
+import set from 'lodash.set'
 
 export function opolTest () {
   return new OpolTest()
@@ -9,8 +10,18 @@ export function opolTest () {
 class OpolTest {
   constructor () {
     this._overrideResources = []
-    this._exercisers = []
     this._api = {}
+    this._config = {
+      stacks: []
+    }
+  }
+
+  withConfig (path, value) {
+    if (path === 'stacks') {
+      throw new Error('Do not use this function to set the stacks, use .withStack instead')
+    }
+    set(this._config, path, value)
+    return this
   }
 
   withMockResource (name, mock) {
@@ -19,7 +30,15 @@ class OpolTest {
   }
 
   withExerciser (exerciser) {
-    this._exercisers.push(exerciser)
+    return this.withStack({
+      name: `__test-exerciser-stack-${this._config.stacks.length}-${exerciser.name}__`,
+      provideResources: () => {},
+      converge: exerciser
+    })
+  }
+
+  withStack (spec) {
+    this._config.stacks.push(spec)
     return this
   }
 
@@ -38,13 +57,8 @@ class OpolTest {
   }
 
   testConverge () {
-    const testStacks = this._exercisers.map((exc, idx) => ({
-      name: `__test-exerciser-stack-${idx}__`,
-      provideResources: () => {},
-      converge: exc
-    }))
     return opol.converge(
-      {stacks: testStacks},
+      this._config,
       {
         provideResources: provide => {
           this._overrideResources.forEach(({name, mock}) => provide(name, mock))
