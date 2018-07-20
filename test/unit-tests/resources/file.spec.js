@@ -25,7 +25,7 @@ describe('the file resource', () => {
     // expect
     return testFileResource((fileResource) => {
       fileResource({path: TEST_PATH, content: TEST_CONTENT})
-    }).then(({mkdirpStub, writeFileStub}) => {
+    }).then(({stubbedFileResource: {mkdirpStub, writeFileStub}}) => {
       expect(mkdirpStub).to.have.been.calledOnceWithExactly(EXPECTED_DIR)
       expect(writeFileStub).to.have.been.calledOnceWithExactly(EXPECTED_PATH, TEST_CONTENT)
     })
@@ -44,7 +44,7 @@ describe('the file resource', () => {
       fileResource({path: TEST_PATH, content: TEST_CONTENT_1})
       fileResource({path: TEST_PATH, content: TEST_CONTENT_2})
       fileResource({path: TEST_PATH, content: TEST_CONTENT_FINAL})
-    }).then(({mkdirpStub, writeFileStub}) => {
+    }).then(({stubbedFileResource: {writeFileStub}}) => {
       expect(writeFileStub).to.have.been.calledOnce
       expect(writeFileStub).to.have.been.calledWithExactly(EXPECTED_PATH, TEST_CONTENT_FINAL)
     })
@@ -80,7 +80,7 @@ describe('the file resource', () => {
         })
       }
     )
-      .then(({writeFileStub}) => {
+      .then(({stubbedFileResource: {writeFileStub}}) => {
         expect(writeFileStub).to.have.been.calledOnce
         expect(writeFileStub).to.have.been.calledWith(EXPECTED_PATH, EXPECTED_CONTENT)
       })
@@ -88,20 +88,9 @@ describe('the file resource', () => {
 })
 
 function testFileResource (when, opolTestSetup = () => {}) {
-  const writeFileStub = sinon.stub().returns(Promise.resolve())
-  const mkdirpStub = sinon.stub().returns(Promise.resolve())
-
-  class MockFileResource extends File {
-    constructor (api) {
-      super(api, {writeFile: writeFileStub, mkdirp: mkdirpStub})
-    }
-  }
-
-  const test = opolTest().withMockResource('File', MockFileResource).withExerciser(({resource}) => {
+  const test = opolTest().usingStubbedFileResource().withExerciser(({resource}) => {
     when(resource('File'))
   })
   opolTestSetup(test)
-  return test
-    .testConverge()
-    .then(() => ({writeFileStub, mkdirpStub}))
+  return test.testConverge()
 }

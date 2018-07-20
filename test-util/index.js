@@ -1,4 +1,6 @@
 import * as opol from '../src'
+import sinon from 'sinon'
+import {File} from '../src/resources/file'
 
 export function opolTest () {
   return new OpolTest()
@@ -8,6 +10,7 @@ class OpolTest {
   constructor () {
     this._overrideResources = []
     this._exercisers = []
+    this._api = {}
   }
 
   withMockResource (name, mock) {
@@ -17,6 +20,20 @@ class OpolTest {
 
   withExerciser (exerciser) {
     this._exercisers.push(exerciser)
+    return this
+  }
+
+  usingStubbedFileResource () {
+    const writeFileStub = sinon.stub().returns(Promise.resolve())
+    const mkdirpStub = sinon.stub().returns(Promise.resolve())
+
+    class StubbedFileResource extends File {
+      constructor (api) {
+        super(api, {writeFile: writeFileStub, mkdirp: mkdirpStub})
+      }
+    }
+    this.withMockResource('File', StubbedFileResource)
+    this._api.stubbedFileResource = {writeFileStub, mkdirpStub}
     return this
   }
 
@@ -33,6 +50,6 @@ class OpolTest {
           this._overrideResources.forEach(({name, mock}) => provide(name, mock))
         }
       }
-    )
+    ).then(() => this._api)
   }
 }
