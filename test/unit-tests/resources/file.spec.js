@@ -1,15 +1,11 @@
 /* eslint-env mocha */
 /* eslint no-unused-expressions: off */
 
-// modules under test
-import {File} from '../../../src/resources/file'
-
 // Support
 import {Resource} from '../../../src/resource'
 import {opolTest} from '../../../test-util'
 import path from 'path'
 import chai, {expect} from 'chai'
-import sinon from 'sinon'
 import sinonChai from 'sinon-chai'
 
 chai.use(sinonChai)
