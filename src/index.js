@@ -144,6 +144,20 @@ class Opol {
   }
 
   loadStack (spec) {
-    return require(`./stacks/${spec}.js`)
+    if (typeof spec === 'string') {
+      return require(`./stacks/${spec}.js`)
+    } else if (typeof spec === 'object') {
+      if (typeof spec.name !== 'string') {
+        throw new TypeError('Stack objects must prodive a string "name" property')
+      }
+      if (typeof spec.provideResources !== 'function') {
+        throw new TypeError(`Stack "${spec.name}" is missing the required "provideResources" function`)
+      }
+      if (typeof spec.converge !== 'function') {
+        throw new TypeError(`Stack "${spec.name}" is missing the required "converge" function`)
+      }
+      return spec
+    }
+    throw new TypeError(`Unexpected stack-spec: "${spec}"; expected a string (module-name) or an object.`)
   }
 }
