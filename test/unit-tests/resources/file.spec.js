@@ -5,7 +5,7 @@
 import {File} from '../../../src/resources/file'
 
 // Support
-import * as opol from '../../../src'
+import {opolTest} from '../../../test-util'
 import path from 'path'
 import chai, {expect} from 'chai'
 import sinon from 'sinon'
@@ -28,20 +28,14 @@ describe('the file resource', () => {
         super(api, {writeFile: writeFileStub, mkdirp: mkdirpStub})
       }
     }
-    const testStack = {
-      name: '__test__',
-      provideResources: (provide) => {
-        provide('File', MockFileResource)
-      },
-      converge: ({resource}) => {
-        resource('File')({path: TEST_PATH, content: TEST_CONTENT})
-      }
-    }
 
     // when
-    const p = opol.converge({
-      stacks: [testStack]
-    })
+    const p = opolTest()
+      .withMockResource('File', MockFileResource)
+      .withExerciser(({resource}) => {
+        resource('File')({path: TEST_PATH, content: TEST_CONTENT})
+      })
+      .testConverge()
 
     // then
     return p.then(() => {
