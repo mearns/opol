@@ -29,7 +29,7 @@
     "check:lint:package-json": "npmPkgJsonLint .",
     "check:lint": "npm-run-all --parallel check:lint:*",
     "check": "npm-run-all --parallel check:*",
-    "test": "nyc mocha ./test/**/*.spec.js",
+    "test": "nyc mocha --recursive ./test",
     "verify": "npm-run-all check test",
     "compile:common": "",
     "compile-prod:app": "babel src/ --out-dir dist/src/ --copy-files",
