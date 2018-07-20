@@ -20,27 +20,33 @@ describe('the file resource', () => {
     const TEST_CONTENT = 'this is the expected test content'
     const EXPECTED_PATH = path.resolve(TEST_PATH)
     const EXPECTED_DIR = path.resolve('rel/path/to/')
-    const writeFileStub = sinon.stub().returns(Promise.resolve())
-    const mkdirpStub = sinon.stub().returns(Promise.resolve())
 
-    class MockFileResource extends File {
-      constructor (api) {
-        super(api, {writeFile: writeFileStub, mkdirp: mkdirpStub})
-      }
-    }
-
-    // when
-    const p = opolTest()
-      .withMockResource('File', MockFileResource)
-      .withExerciser(({resource}) => {
-        resource('File')({path: TEST_PATH, content: TEST_CONTENT})
-      })
-      .testConverge()
-
-    // then
-    return p.then(() => {
+    // expect
+    return testFileResource((fileResource) => {
+      fileResource({path: TEST_PATH, content: TEST_CONTENT})
+    }).then(({mkdirpStub, writeFileStub}) => {
       expect(mkdirpStub).to.have.been.calledOnceWithExactly(EXPECTED_DIR)
       expect(writeFileStub).to.have.been.calledOnceWithExactly(EXPECTED_PATH, TEST_CONTENT)
     })
   })
 })
+
+function testFileResource (when) {
+  const writeFileStub = sinon.stub().returns(Promise.resolve())
+  const mkdirpStub = sinon.stub().returns(Promise.resolve())
+
+  class MockFileResource extends File {
+    constructor (api) {
+      super(api, {writeFile: writeFileStub, mkdirp: mkdirpStub})
+    }
+  }
+
+  // when
+  return opolTest()
+    .withMockResource('File', MockFileResource)
+    .withExerciser(({resource}) => {
+      when(resource('File'))
+    })
+    .testConverge()
+    .then(() => ({writeFileStub, mkdirpStub}))
+}
