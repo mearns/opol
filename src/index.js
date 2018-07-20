@@ -125,7 +125,7 @@ class Opol {
 
     // Run the stacks.
     stage = 'prep-and-validation'
-    this._stacks.bottomUp((stack, stackId) => stack.converge({state: stateAPIFactoriesByStackId[stackId](), config, resource}))
+    this._stacks.topDown((stack, stackId) => stack.converge({state: stateAPIFactoriesByStackId[stackId](), config, resource}))
 
     // Run executions for all resource usages.
     stage = 'execution'
