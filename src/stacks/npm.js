@@ -33,8 +33,9 @@ export function converge ({state, config, resource}) {
 
   const configGetter = () => {
     return (state.get('configMergeOperations') || []).reduce((config, {path, value}) => {
-      set(config, path, value)
-      return config
+      const addOn = {}
+      set(addOn, path, value)
+      return {...config, ...addOn}
     }, {})
   }
 
