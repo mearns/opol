@@ -84,7 +84,7 @@ describe('the file resource', () => {
 })
 
 function testFileResource (when, opolTestSetup = () => {}) {
-  const test = opolTest().usingStubbedFileResource().withExerciser(({resource}) => {
+  const test = opolTest().withExerciser(({resource}) => {
     when(resource('File'))
   })
   opolTestSetup(test)

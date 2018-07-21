@@ -48,11 +48,6 @@ class OpolTest {
     return this
   }
 
-  usingStubbedFileResource () {
-    this._useMocks.file = true
-    return this
-  }
-
   withoutStubbedFileResource () {
     this._useMocks.file = false
     return this

@@ -16,7 +16,6 @@ describe('the npm stack', () => {
 
     // Expect
     opolTest()
-      .usingStubbedFileResource()
       .withStack('npm')
       .withConfig('project.name', TEST_PROJECT_NAME)
       .withConfig('project.version', TEST_PROJECT_VERSION_STRING)
@@ -37,7 +36,6 @@ describe('the npm stack', () => {
 
       // Expect
       return opolTest()
-        .usingStubbedFileResource()
         .withStack('npm')
         .withConfig('project.name', CONFIGURED_PROJECT_NAME)
         .withConfig('project.version', TEST_PROJECT_VERSION_STRING)
@@ -62,7 +60,6 @@ describe('the npm stack', () => {
 
       // Expect
       return opolTest()
-        .usingStubbedFileResource()
         .withStack('npm')
         .withConfig('project.name', TEST_PACKAGE_NAME)
         .withConfig('project.version', CONFIGURED_PROJECT_VERSION)
@@ -86,7 +83,6 @@ describe('the npm stack', () => {
 
       // Expect
       return opolTest()
-        .usingStubbedFileResource()
         .withStack('npm')
         .withExerciser(({resource}) => {
           resource('NpmDependency')(PACKAGE_NAME, PACKAGE_VERSION)
