@@ -1,14 +1,9 @@
 /* eslint-env mocha */
 /* eslint no-unused-expressions: off */
 
-// modules under test
-import * as opol from '../../../src'
-
 // Support
-import path from 'path'
 import {opolTest} from '../../../test-util'
 import chai, {expect} from 'chai'
-import sinon from 'sinon'
 import sinonChai from 'sinon-chai'
 
 chai.use(sinonChai)
@@ -26,15 +21,10 @@ describe('the npm stack', () => {
       .withConfig('project.name', TEST_PROJECT_NAME)
       .withConfig('project.version', TEST_PROJECT_VERSION_STRING)
       .testConverge()
-      .then(({stubbedFileResource: {mkdirpStub, writeFileStub}}) => {
-        expect(mkdirpStub).to.have.been.calledOnceWithExactly(path.resolve('./'))
-        expect(writeFileStub).to.have.been.calledOnceWithExactly(
-          path.resolve('package.json'),
-          JSON.stringify({
-            name: TEST_PROJECT_NAME,
-            version: TEST_PROJECT_VERSION_STRING
-          }, null, 4)
-        )
+      .then(({fs}) => {
+        const packageData = fs.readJsonSync('./package.json')
+        expect(packageData).to.have.property('name', TEST_PROJECT_NAME)
+        expect(packageData).to.have.property('version', TEST_PROJECT_VERSION_STRING)
       })
   })
 
@@ -55,15 +45,10 @@ describe('the npm stack', () => {
           resource('NpmPackageName')(TEST_PACKAGE_NAME)
         })
         .testConverge()
-        .then(({stubbedFileResource: {mkdirpStub, writeFileStub}}) => {
-          expect(mkdirpStub).to.have.been.calledOnceWithExactly(path.resolve('./'))
-          expect(writeFileStub).to.have.been.calledOnceWithExactly(
-            path.resolve('package.json'),
-            JSON.stringify({
-              name: TEST_PACKAGE_NAME,
-              version: TEST_PROJECT_VERSION_STRING
-            }, null, 4)
-          )
+        .then(({fs}) => {
+          const packageData = fs.readJsonSync('./package.json')
+          expect(packageData).to.have.property('name', TEST_PACKAGE_NAME)
+          expect(packageData).to.have.property('version', TEST_PROJECT_VERSION_STRING)
         })
     })
   })
@@ -85,15 +70,10 @@ describe('the npm stack', () => {
           resource('NpmPackageVersion')(TEST_PACKAGE_VERSION)
         })
         .testConverge()
-        .then(({stubbedFileResource: {mkdirpStub, writeFileStub}}) => {
-          expect(mkdirpStub).to.have.been.calledOnceWithExactly(path.resolve('./'))
-          expect(writeFileStub).to.have.been.calledOnceWithExactly(
-            path.resolve('package.json'),
-            JSON.stringify({
-              name: TEST_PACKAGE_NAME,
-              version: TEST_PACKAGE_VERSION
-            }, null, 4)
-          )
+        .then(({fs}) => {
+          const packageData = fs.readJsonSync('./package.json')
+          expect(packageData).to.have.property('name', TEST_PACKAGE_NAME)
+          expect(packageData).to.have.property('version', TEST_PACKAGE_VERSION)
         })
     })
   })
@@ -112,20 +92,11 @@ describe('the npm stack', () => {
           resource('NpmDependency')(PACKAGE_NAME, PACKAGE_VERSION)
         })
         .testConverge()
-        .then(({stubbedFileResource: {mkdirpStub, writeFileStub}}) => {
-          expect(writeFileStub).to.have.been.calledOnceWithExactly(
-            path.resolve('package.json'),
-            sinon.match.packageJson(sinon.match({
-              dependencies: sinon.match({
-                [PACKAGE_NAME]: PACKAGE_VERSION
-              })
-            }))
-          )
+        .then(({fs}) => {
+          const packageData = fs.readJsonSync('./package.json')
+          expect(packageData).to.have.property('dependencies')
+          expect(packageData.dependencies).to.have.property(PACKAGE_NAME, PACKAGE_VERSION)
         })
     })
   })
 })
-
-sinon.match.packageJson = function packageJson (matcher) {
-  return sinon.match(packageJson => matcher.test(JSON.parse(packageJson)))
-}

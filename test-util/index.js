@@ -2,6 +2,9 @@ import * as opol from '../src'
 import sinon from 'sinon'
 import {File} from '../src/resources/file'
 import set from 'lodash.set'
+import {Volume} from 'memfs'
+import process from 'process'
+import Promise from 'bluebird'
 
 export function opolTest () {
   return new OpolTest()
@@ -10,10 +13,13 @@ export function opolTest () {
 class OpolTest {
   constructor () {
     this._overrideResources = []
-    this._api = {}
     this._config = {
       stacks: []
     }
+    this._useMocks = {
+      file: true
+    }
+    this._api = {}
   }
 
   withConfig (path, value) {
@@ -43,20 +49,33 @@ class OpolTest {
   }
 
   usingStubbedFileResource () {
-    const writeFileStub = sinon.stub().returns(Promise.resolve())
-    const mkdirpStub = sinon.stub().returns(Promise.resolve())
+    this._useMocks.file = true
+    return this
+  }
 
-    class StubbedFileResource extends File {
-      constructor (api) {
-        super(api, {writeFile: writeFileStub, mkdirp: mkdirpStub})
-      }
-    }
-    this.withMockResource('File', StubbedFileResource)
-    this._api.stubbedFileResource = {writeFileStub, mkdirpStub}
+  withoutStubbedFileResource () {
+    this._useMocks.file = false
     return this
   }
 
   testConverge () {
+    if (this._useMocks.file) {
+      const shadowFs = new Volume()
+      shadowFs.mkdirpSync(process.cwd())
+
+      const writeFileStub = sinon.spy(Promise.promisify(shadowFs.writeFile.bind(shadowFs)))
+      const mkdirpStub = sinon.spy(Promise.promisify(shadowFs.mkdirp.bind(shadowFs)))
+
+      class StubbedFileResource extends File {
+        constructor (api) {
+          super(api, {writeFile: writeFileStub, mkdirp: mkdirpStub})
+        }
+      }
+      this.withMockResource('File', StubbedFileResource)
+      this._api.stubbedFileResource = {writeFileStub, mkdirpStub}
+      this._api.fs = {...shadowFs, readJsonSync: (...args) => JSON.parse(shadowFs.readFileSync(...args))}
+    }
+
     return opol.converge(
       this._config,
       {
