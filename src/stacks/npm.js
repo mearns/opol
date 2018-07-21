@@ -20,10 +20,36 @@ class NpmPackageData extends Resource {
   }
 }
 
+class NpmAnyDependency extends Resource {
+  prepAndValidateInstance (packageName, {version, type = 'dependencies'} = {}) {
+    const allDepedencies = this.state.get('allDependencies') || {}
+    const deps = allDepedencies[type] = allDepedencies[type] || {}
+    if (deps[packageName] !== version) {
+      throw new Error(`Cannot add dependency ${packageName}@${version}, another version is already specified: ${packageName}@${version}`)
+    }
+    deps[packageName] = version
+    this.state.set('allDependencies', allDepedencies)
+  }
+}
+
+class NpmDependency extends Resource {
+  prepAndValidateInstance (packageName, version) {
+    this.resource('NpmAnyDependency')(packageName, {version, type: 'dependencies'})
+  }
+}
+class NpmDevDependency extends Resource {
+  prepAndValidateInstance (packageName, version) {
+    this.resource('NpmAnyDependency')(packageName, {version, type: 'devDependencies'})
+  }
+}
+
 export function provideResources (provide) {
   provide('NpmPackageName', NpmPackageName)
   provide('NpmPackageVersion', NpmPackageVersion)
   provide('NpmPackageData', NpmPackageData)
+  provide('NpmAnyDependency', NpmAnyDependency)
+  provide('NpmDependency', NpmDependency)
+  provide('NpmDevDependency', NpmDevDependency)
 }
 
 export function converge ({state, config, resource}) {
@@ -31,12 +57,27 @@ export function converge ({state, config, resource}) {
   resource('NpmPackageName')(config('project.name'))
   resource('NpmPackageVersion')(config('project.version'))
 
+  state.set('allDependencies', {})
+
   const configGetter = () => {
+    const initialConfig = {}
+    const allDeps = state.get('allDependencies')
+    if (allDeps) {
+      const deps = allDeps.dependencies
+      if (deps) {
+        initialConfig.dependencies = deps
+      }
+
+      const devDeps = allDeps.devDependencies
+      if (devDeps) {
+        initialConfig.devDependencies = devDeps
+      }
+    }
     return (state.get('configMergeOperations') || []).reduce((config, {path, value}) => {
       const addOn = {}
       set(addOn, path, value)
       return {...config, ...addOn}
-    }, {})
+    }, initialConfig)
   }
 
   const jsonFile = resource('JsonFile')
