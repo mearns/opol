@@ -115,15 +115,17 @@ describe('the npm stack', () => {
         .then(({stubbedFileResource: {mkdirpStub, writeFileStub}}) => {
           expect(writeFileStub).to.have.been.calledOnceWithExactly(
             path.resolve('package.json'),
-            sinon.match(arg => {
-              return sinon.match({
-                dependencies: sinon.match({
-                  [PACKAGE_NAME]: PACKAGE_VERSION
-                })
-              }).test(JSON.parse(arg))
-            })
+            sinon.match.packageJson(sinon.match({
+              dependencies: sinon.match({
+                [PACKAGE_NAME]: PACKAGE_VERSION
+              })
+            }))
           )
         })
     })
   })
 })
+
+sinon.match.packageJson = function packageJson (matcher) {
+  return sinon.match(packageJson => matcher.test(JSON.parse(packageJson)))
+}
