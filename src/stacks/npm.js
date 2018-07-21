@@ -24,8 +24,8 @@ class NpmAnyDependency extends Resource {
   prepAndValidateInstance (packageName, {version, type = 'dependencies'} = {}) {
     const allDepedencies = this.state.get('allDependencies') || {}
     const deps = allDepedencies[type] = allDepedencies[type] || {}
-    if (deps[packageName] !== version) {
-      throw new Error(`Cannot add dependency ${packageName}@${version}, another version is already specified: ${packageName}@${version}`)
+    if (deps[packageName] && deps[packageName] !== version) {
+      throw new Error(`Cannot add dependency ${packageName}@${version}, another version is already specified: ${packageName}@${deps[packageName]}`)
     }
     deps[packageName] = version
     this.state.set('allDependencies', allDepedencies)

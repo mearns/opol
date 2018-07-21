@@ -97,4 +97,33 @@ describe('the npm stack', () => {
         })
     })
   })
+
+  describe('NpmDependency resource', () => {
+    it('should add the specified version of a dependency to the package.json file', () => {
+      // given
+      const PACKAGE_NAME = 'some-other-package'
+      const PACKAGE_VERSION = '7.5.0'
+
+      // Expect
+      return opolTest()
+        .usingStubbedFileResource()
+        .withStack('npm')
+        .withExerciser(({resource}) => {
+          resource('NpmDependency')(PACKAGE_NAME, PACKAGE_VERSION)
+        })
+        .testConverge()
+        .then(({stubbedFileResource: {mkdirpStub, writeFileStub}}) => {
+          expect(writeFileStub).to.have.been.calledOnceWithExactly(
+            path.resolve('package.json'),
+            sinon.match(arg => {
+              return sinon.match({
+                dependencies: sinon.match({
+                  [PACKAGE_NAME]: PACKAGE_VERSION
+                })
+              }).test(JSON.parse(arg))
+            })
+          )
+        })
+    })
+  })
 })
