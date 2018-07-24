@@ -29,6 +29,7 @@
     "check:lint:package-json": "npmPkgJsonLint .",
     "check:lint": "npm-run-all --parallel check:lint:*",
     "check": "npm-run-all --parallel check:*",
+    "test-only": "mocha --require babel-core/register --recursive ./test",
     "test": "nyc mocha --recursive ./test",
     "verify": "npm-run-all check test",
     "compile:common": "",
@@ -110,6 +111,7 @@
     "fs-extra": "7.0.0",
     "lodash.get": "4.4.2",
     "mz": "2.7.0",
+    "semver": "5.5.0",
     "set": "1.1.1"
   }
 }
