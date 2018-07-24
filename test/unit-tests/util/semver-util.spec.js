@@ -18,6 +18,18 @@ Assertion.addMethod('satisfiedBy', function (version) {
 
 describe('the semver-util package', () => {
 
+  describe('combined sets', () => {
+    it('should be satisfied by a version that satisfies both ranges', () => {
+      expect(semverUtil.intersection('<1.0.0 || >1.5.0', '>0.5.0 <0.7.0 || >2.0.0 <4.0.0')).to.be.satisfiedBy('0.6.1')
+      expect(semverUtil.intersection('<1.0.0 || >1.5.0', '>0.5.0 <0.7.0 || >2.0.0 <4.0.0')).to.be.satisfiedBy('3.5.0')
+    })
+
+    it('should not be satisfied by a version that only satisfied one range', () => {
+      expect(semverUtil.intersection('<1.0.0 || >1.5.0', '>0.5.0 <0.7.0 || >2.0.0 <4.0.0')).to.be.not.satisfiedBy('0.0.1')
+      expect(semverUtil.intersection('<1.0.0 || >1.5.0', '>0.5.0 <0.7.0 || >2.0.0 <4.0.0')).to.be.not.satisfiedBy('5.1.2')
+    })
+  })
+
   describe('a composite range', () => {
     it('should be satisfied by a version that satisfied either comparator set', () => {
       expect('<=1.2.3 || >5.6.7').to.be.satisfiedBy('1.2.3')

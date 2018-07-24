@@ -1,12 +1,27 @@
 import semver from 'semver'
 
 export function range (expression) {
+  if (expression instanceof _Range) {
+    return expression
+  }
   return new _Range(expression.trim().split('||').map(comparatorSet))
+}
+
+export function intersection (range1, range2) {
+  return range(range1).intersectWith(range2)
 }
 
 class _Range {
   constructor (comparatorSets) {
     this.comparatorSets = comparatorSets
+  }
+
+  intersectWith (_range2) {
+    const range2 = range(_range2).simplify()
+    const crossProducts = this.simplify().comparatorSets.reduce((pairs, cs) => {
+      return [...pairs, ...(range2.comparatorSets.map(cs2 => [cs, cs2]))]
+    }, [])
+    return new _Range(..._Range(crossProducts.map(([cs1, cs2]) => cs1.intersectWith(cs2)))).simplify()
   }
 
   toString () {
@@ -43,6 +58,9 @@ class _Range {
 }
 
 function comparatorSet (expression) {
+  if (expression instanceof _ComparatorSet) {
+    return expression
+  }
   return new _ComparatorSet(expression.trim().split(/\s+/).map(comparator))
 }
 
@@ -210,7 +228,7 @@ function comparator (expression) {
   const operator = match[1]
   const version = semver.valid(match[2])
   if (!version) {
-    throw new Error(`Invalid semver version: ${version}`)
+    throw new Error(`Invalid semver version: ${match[2]}`)
   }
 
   const OperatorClass = {
