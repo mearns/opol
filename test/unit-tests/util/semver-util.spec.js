@@ -28,6 +28,12 @@ describe('the semver-util package', () => {
       expect(semverUtil.intersection('<1.0.0 || >1.5.0', '>0.5.0 <0.7.0 || >2.0.0 <4.0.0')).to.be.not.satisfiedBy('0.0.1')
       expect(semverUtil.intersection('<1.0.0 || >1.5.0', '>0.5.0 <0.7.0 || >2.0.0 <4.0.0')).to.be.not.satisfiedBy('5.1.2')
     })
+
+    it('should ignore empty ranges that result from the intersection', () => {
+      expect(semverUtil.intersection('<1.0.0 || >1.5.0', '<1.2.5')).to.be.satisfiedBy('0.9.0')
+      expect(semverUtil.intersection('<1.0.0 || >1.5.0', '<1.2.5')).to.not.be.satisfiedBy('1.1.0')
+      expect(semverUtil.intersection('<1.0.0 || >1.5.0', '<1.2.5')).to.not.be.satisfiedBy('1.6.0')
+    })
   })
 
   describe('a composite range', () => {
@@ -43,6 +49,17 @@ describe('the semver-util package', () => {
 
     it('should be satisfied by a version that satisfied both comparator sets', () => {
       expect('>=2.0.0 || >1.2.3 <2.0.2').to.be.satisfiedBy('2.0.1')
+    })
+  })
+
+  describe('an empty range', () => {
+    it('should not be satisfied by any version', () => {
+      expect('>5.0.0 <3.0.0').to.not.be.satisfiedBy('0.0.0')
+      expect('>5.0.0 <3.0.0').to.not.be.satisfiedBy('1.0.0')
+      expect('>5.0.0 <3.0.0').to.not.be.satisfiedBy('2.0.0')
+      expect('>5.0.0 <3.0.0').to.not.be.satisfiedBy('3.0.0')
+      expect('>5.0.0 <3.0.0').to.not.be.satisfiedBy('5.0.0')
+      expect('>5.0.0 <3.0.0').to.not.be.satisfiedBy('6.0.0')
     })
   })
 

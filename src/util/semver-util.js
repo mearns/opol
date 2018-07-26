@@ -4,7 +4,7 @@ export function range (expression) {
   if (expression instanceof _Range) {
     return expression
   }
-  return new _Range(expression.trim().split('||').map(comparatorSet))
+  return new _Range(...(expression.trim().split('||').map(comparatorSet)))
 }
 
 export function intersection (range1, range2) {
@@ -12,8 +12,8 @@ export function intersection (range1, range2) {
 }
 
 class _Range {
-  constructor (comparatorSets) {
-    this.comparatorSets = comparatorSets
+  constructor (...comparatorSets) {
+    this.comparatorSets = comparatorSets.filter(Boolean)
   }
 
   intersectWith (_range2) {
@@ -21,7 +21,16 @@ class _Range {
     const crossProducts = this.simplify().comparatorSets.reduce((pairs, cs) => {
       return [...pairs, ...(range2.comparatorSets.map(cs2 => [cs, cs2]))]
     }, [])
-    return new _Range(..._Range(crossProducts.map(([cs1, cs2]) => cs1.intersectWith(cs2)))).simplify()
+    return new _Range(...(crossProducts.map(([cs1, cs2]) => {
+      try {
+        return cs1.intersectWith(cs2)
+      } catch (e) {
+        if (e instanceof EmptyIntersectionError) {
+          return null
+        }
+        throw e
+      }
+    }))).simplify()
   }
 
   toString () {
@@ -61,12 +70,12 @@ function comparatorSet (expression) {
   if (expression instanceof _ComparatorSet) {
     return expression
   }
-  return new _ComparatorSet(expression.trim().split(/\s+/).map(comparator))
+  return new _ComparatorSet(...(expression.trim().split(/\s+/).map(comparator)))
 }
 
 class _ComparatorSet {
-  constructor (comparators) {
-    this.comparators = [...comparators]
+  constructor (...comparators) {
+    this.comparators = comparators.filter(Boolean)
   }
 
   isSatisfiedBy (version) {
@@ -111,12 +120,18 @@ class _Comparator {
 class _UnboundedBelow extends _Comparator {
   getLowerBound () { return null }
   getStrictestLowerBound (other) {
+    if (!other) {
+      return null
+    }
     return other.getLowerBound()
   }
 }
 class _UnboundedAbove extends _Comparator {
   getUpperBound () { return null }
   getStrictestUpperBound (other) {
+    if (!other) {
+      return null
+    }
     return other.getUpperBound()
   }
 }
@@ -132,6 +147,9 @@ class LT extends _UnboundedBelow {
     return this
   }
   getStrictestUpperBound (other) {
+    if (!other) {
+      return this
+    }
     const oub = other.getUpperBound()
     if (oub === null) {
       return this
@@ -150,6 +168,9 @@ class LTE extends _UnboundedBelow {
     return new EQ(this.version)
   }
   getStrictestUpperBound (other) {
+    if (!other) {
+      return this
+    }
     const oub = other.getUpperBound()
     if (oub === null) {
       return this
@@ -168,6 +189,9 @@ class GT extends _UnboundedAbove {
     return this
   }
   getStrictestLowerBound (other) {
+    if (!other) {
+      return this
+    }
     const oub = other.getLowerBound()
     if (oub === null) {
       return this
@@ -186,6 +210,9 @@ class GTE extends _UnboundedAbove {
     return new EQ(this.version)
   }
   getStrictestLowerBound (other) {
+    if (!other) {
+      return this
+    }
     const oub = other.getLowerBound()
     if (oub === null) {
       return this
@@ -213,7 +240,7 @@ class EQ extends _Comparator {
     return this.getStrictestBound(other)
   }
   getStrictestBound (other) {
-    if (other === null || other.isSatisfiedBy(this.version)) {
+    if (!other || other.isSatisfiedBy(this.version)) {
       return this
     }
     throw new EmptyIntersectionError(`${this.toString()} U ${other.toStrin()}`)
