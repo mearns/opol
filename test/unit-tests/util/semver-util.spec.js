@@ -34,6 +34,13 @@ describe('the semver-util package', () => {
       expect(semverUtil.intersection('<1.0.0 || >1.5.0', '<1.2.5')).to.not.be.satisfiedBy('1.1.0')
       expect(semverUtil.intersection('<1.0.0 || >1.5.0', '<1.2.5')).to.not.be.satisfiedBy('1.6.0')
     })
+
+    it('should stringify as expected', () => {
+      expect(semverUtil.intersection('>0.5.0 || <1.5.6', '>1.2.10').toString()).to.equal('>1.2.10 || >1.2.10 <1.5.6')
+      // expect(semverUtil.intersection('>0.5.0 || <1.5.6', '>1.2.10 || <0.4.0').toString()).to.equal(
+      //   '>1.2.10 || >1.2.10 <1.5.6 || <0.4.0'
+      // )
+    })
   })
 
   describe('a composite range', () => {
@@ -61,6 +68,17 @@ describe('the semver-util package', () => {
       expect('>5.0.0 <3.0.0').to.not.be.satisfiedBy('5.0.0')
       expect('>5.0.0 <3.0.0').to.not.be.satisfiedBy('6.0.0')
     })
+  })
+
+  it('should throw an EmptyIntersectionError when an empty ComparatorSet is simplified', () => {
+    expect(() => semverUtil.range('>1.0.0 <0.0.5').simplify()).to.throw(semverUtil.EmptyIntersectionError)
+    expect(() => semverUtil.range('>1.0.0 <1.0.0').simplify()).to.throw(semverUtil.EmptyIntersectionError)
+    expect(() => semverUtil.range('>=1.0.0 <1.0.0').simplify()).to.throw(semverUtil.EmptyIntersectionError)
+    expect(() => semverUtil.range('>1.0.0 <=1.0.0').simplify()).to.throw(semverUtil.EmptyIntersectionError)
+  })
+
+  it('simplify a comparator set to a single exact version', () => {
+    expect(semverUtil.range('<=1.0.0 >=1.0.0').simplify().toString()).to.equal('1.0.0')
   })
 
   describe('a two-ended exclusive range', () => {

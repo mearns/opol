@@ -34,7 +34,7 @@ class _Range {
   }
 
   toString () {
-    return this.comparatorSets.map(cs => cs.toStrin()).join(' || ')
+    return this.comparatorSets.map(cs => cs.toString()).join(' || ')
   }
 
   isSatisfiedBy (version) {
@@ -51,18 +51,20 @@ class _Range {
    * implementation doesn't simplify either of these.
    */
   simplify () {
-    return new _Range(
-      ...(this.comparatorSets.map(cs => {
-        try {
-          return cs.simplify()
-        } catch (e) {
-          if (e instanceof EmptyIntersectionError) {
-            return null
-          }
-          throw e
+    const comparatorSets = this.comparatorSets.map(cs => {
+      try {
+        return cs.simplify()
+      } catch (e) {
+        if (e instanceof EmptyIntersectionError) {
+          return null
         }
-      }).filter(cs => cs !== null))
-    )
+        throw e
+      }
+    }).filter(Boolean)
+    if (comparatorSets.length === 0) {
+      throw new EmptyIntersectionError(`The simplified range produces only empty intersections: ${this.toString()}`)
+    }
+    return new _Range(...comparatorSets)
   }
 }
 
@@ -83,7 +85,7 @@ class _ComparatorSet {
   }
 
   toString () {
-    return this.comparators.map(c => c.toStrin()).join(' ')
+    return this.comparators.map(c => c.toString()).join(' ')
   }
 
   /**
@@ -105,11 +107,22 @@ class _ComparatorSet {
   simplify () {
     const lowerBounds = this.comparators.reduce((lowerBounds, current) => current.getStrictestLowerBound(lowerBounds), null)
     const upperBounds = this.comparators.reduce((upperBounds, current) => current.getStrictestUpperBound(upperBounds), null)
-    return new _ComparatorSet(...([lowerBounds, upperBounds].filter(x => x !== null)))
+    if (lowerBounds && upperBounds) {
+      const lowerVersion = lowerBounds.version
+      const upperVersion = upperBounds.version
+      if (semver.lt(upperVersion, lowerVersion) || semver.gt(lowerVersion, upperVersion)) {
+        throw new EmptyIntersectionError(`Comparator simplifies to an empty intersection: ${lowerBounds.toString()} ${upperBounds.toString()}`)
+      }
+      if (semver.eq(lowerVersion, upperVersion) && lowerBounds.isSatisfiedBy(upperVersion) && upperBounds.isSatisfiedBy(lowerVersion)) {
+        return new _ComparatorSet(new EQ(lowerVersion))
+      }
+    }
+    const simplifiedCs = new _ComparatorSet(...([lowerBounds, upperBounds].filter(x => x !== null)))
+    return simplifiedCs
   }
 }
 
-class EmptyIntersectionError extends Error {}
+export class EmptyIntersectionError extends Error {}
 
 class _Comparator {
   constructor (version) {
@@ -222,7 +235,7 @@ class GTE extends _UnboundedAbove {
 }
 class EQ extends _Comparator {
   toString () {
-    return `=${this.version}`
+    return `${this.version}`
   }
   isSatisfiedBy (version) {
     return semver.eq(version, this.version)
@@ -243,7 +256,7 @@ class EQ extends _Comparator {
     if (!other || other.isSatisfiedBy(this.version)) {
       return this
     }
-    throw new EmptyIntersectionError(`${this.toString()} U ${other.toStrin()}`)
+    throw new EmptyIntersectionError(`${this.toString()} U ${other.toString()}`)
   }
 }
 
