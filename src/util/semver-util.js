@@ -120,8 +120,7 @@ class _ComparatorSet {
         throw new EmptyIntersectionError(`Comparator simplifies to an empty intersection: ${lowerBounds.toString()} ${upperBounds.toString()}`)
       }
     }
-    const simplifiedCs = new _ComparatorSet(...([lowerBounds, upperBounds].filter(x => x !== null)))
-    return simplifiedCs
+    return new _ComparatorSet(...([lowerBounds, upperBounds].filter(x => x !== null)))
   }
 }
 
