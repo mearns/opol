@@ -113,8 +113,11 @@ class _ComparatorSet {
       if (semver.lt(upperVersion, lowerVersion) || semver.gt(lowerVersion, upperVersion)) {
         throw new EmptyIntersectionError(`Comparator simplifies to an empty intersection: ${lowerBounds.toString()} ${upperBounds.toString()}`)
       }
-      if (semver.eq(lowerVersion, upperVersion) && lowerBounds.isSatisfiedBy(upperVersion) && upperBounds.isSatisfiedBy(lowerVersion)) {
-        return new _ComparatorSet(new EQ(lowerVersion))
+      if (semver.eq(lowerVersion, upperVersion)) {
+        if (lowerBounds.isSatisfiedBy(upperVersion) && upperBounds.isSatisfiedBy(lowerVersion)) {
+          return new _ComparatorSet(new EQ(lowerVersion))
+        }
+        throw new EmptyIntersectionError(`Comparator simplifies to an empty intersection: ${lowerBounds.toString()} ${upperBounds.toString()}`)
       }
     }
     const simplifiedCs = new _ComparatorSet(...([lowerBounds, upperBounds].filter(x => x !== null)))
