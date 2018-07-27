@@ -94,5 +94,24 @@ describe('the npm stack', () => {
           expect(packageData.dependencies).to.have.property(PACKAGE_NAME, PACKAGE_VERSION)
         })
     })
+
+    it('should form an intersection of specified version constraints when the same dependency is added multiple times.', () => {
+      // given
+      const PACKAGE_NAME = 'some-package'
+
+      // Expect
+      return opolTest()
+        .withStack('npm')
+        .withExerciser(({resource}) => {
+          resource('NpmDependency')(PACKAGE_NAME, '<1.0.0 || >3.0.0 || >=4.0.0 <6.0.0')
+          resource('NpmDependency')(PACKAGE_NAME, '>=3.5.0')
+        })
+        .testConverge()
+        .then(({fs}) => {
+          const packageData = fs.readJsonSync('./package.json')
+          expect(packageData).to.have.property('dependencies')
+          expect(packageData.dependencies).to.have.property(PACKAGE_NAME, '>=3.5.0 || >=4.0.0 <6.0.0')
+        })
+    })
   })
 })

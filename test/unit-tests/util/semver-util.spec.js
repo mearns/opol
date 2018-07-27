@@ -37,10 +37,17 @@ describe('the semver-util package', () => {
 
     it('should stringify as expected', () => {
       expect(semverUtil.intersection('>0.5.0 || <1.5.6', '>1.2.10').toString()).to.equal('>1.2.10 || >1.2.10 <1.5.6')
-      // expect(semverUtil.intersection('>0.5.0 || <1.5.6', '>1.2.10 || <0.4.0').toString()).to.equal(
-      //   '>1.2.10 || >1.2.10 <1.5.6 || <0.4.0'
-      // )
+      expect(semverUtil.intersection('>0.5.0 || <1.5.6', '>1.2.10 || <0.4.0').toString()).to.equal(
+        '>1.2.10 || >1.2.10 <1.5.6 || <0.4.0'
+      )
+      expect(semverUtil.intersection('>=4.0.0 <6.0.0', '>=3.5.0').toString()).to.equal(
+        '>=4.0.0 <6.0.0'
+      )
     })
+  })
+
+  it('a well defined range should not be changed through simplification', () => {
+    expect(semverUtil.range('>=4.0.0 <6.0.0').simplify().toString()).to.equal('>=4.0.0 <6.0.0')
   })
 
   describe('a composite range', () => {

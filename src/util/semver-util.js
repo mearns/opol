@@ -102,7 +102,7 @@ class _ComparatorSet {
    * @param {ComparatorSet} other
    */
   intersectWith (other) {
-    return new _ComparatorSet(...this.comparators, ...other.comparators)
+    return new _ComparatorSet(...this.comparators, ...comparatorSet(other).comparators).simplify()
   }
 
   /**
@@ -185,7 +185,7 @@ class LTE extends _UnboundedBelow {
     return semver.lte(version, this.version)
   }
   getUpperBound () {
-    return new EQ(this.version)
+    return this
   }
   getStrictestUpperBound (other) {
     if (!other) {
@@ -227,7 +227,7 @@ class GTE extends _UnboundedAbove {
     return semver.gte(version, this.version)
   }
   getLowerBound () {
-    return new EQ(this.version)
+    return this
   }
   getStrictestLowerBound (other) {
     if (!other) {
@@ -248,10 +248,10 @@ class EQ extends _Comparator {
     return semver.eq(version, this.version)
   }
   getUpperBound () {
-    return this.version
+    return this
   }
   getLowerBound () {
-    return this.version
+    return this
   }
   getStrictestUpperBound (other) {
     return this.getStrictestBound(other)
