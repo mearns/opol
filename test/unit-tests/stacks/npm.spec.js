@@ -104,13 +104,14 @@ describe('the npm stack', () => {
         .withStack('npm')
         .withExerciser(({resource}) => {
           resource('NpmDependency')(PACKAGE_NAME, '<1.0.0 || >3.0.0 || >=4.0.0 <6.0.0')
-          resource('NpmDependency')(PACKAGE_NAME, '>=3.5.0')
+          resource('NpmDependency')(PACKAGE_NAME, '>=3.5.0 || <7.0.0')
         })
         .testConverge()
         .then(({fs}) => {
           const packageData = fs.readJsonSync('./package.json')
           expect(packageData).to.have.property('dependencies')
-          expect(packageData.dependencies).to.have.property(PACKAGE_NAME, '>=3.5.0 || >=4.0.0 <6.0.0')
+          expect(packageData.dependencies).to.have.property(PACKAGE_NAME,
+            '<1.0.0 || >=3.5.0 || >3.0.0 <7.0.0 || >=4.0.0 <6.0.0 || >=4.0.0 <6.0.0')
         })
     })
   })
