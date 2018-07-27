@@ -7,8 +7,13 @@ export function range (expression) {
   return new _Range(...(expression.trim().split('||').map(comparatorSet)))
 }
 
-export function intersection (range1, range2) {
-  return range(range1).intersectWith(range2)
+export function intersection (...ranges) {
+  return ranges.reduce((intersection, r) => {
+    if (intersection) {
+      return intersection.intersectWith(r)
+    }
+    return range(r)
+  }, null)
 }
 
 class _Range {
