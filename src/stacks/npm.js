@@ -1,5 +1,6 @@
 import {Resource} from '../resource'
 import set from 'lodash.set'
+import * as semver from '../util/semver-util'
 
 class NpmPackageName extends Resource {
   prepAndValidateInstance (name) {
@@ -24,10 +25,7 @@ class NpmAnyDependency extends Resource {
   prepAndValidateInstance (packageName, {version, type = 'dependencies'} = {}) {
     const allDepedencies = this.state.get('allDependencies') || {}
     const deps = allDepedencies[type] = allDepedencies[type] || {}
-    if (deps[packageName] && deps[packageName] !== version) {
-      throw new Error(`Cannot add dependency ${packageName}@${version}, another version is already specified: ${packageName}@${deps[packageName]}`)
-    }
-    deps[packageName] = version
+    deps[packageName] = [...(deps[packageName] || []), version]
     this.state.set('allDependencies', allDepedencies)
   }
 }
@@ -52,6 +50,31 @@ export function provideResources (provide) {
   provide('NpmDevDependency', NpmDevDependency)
 }
 
+function generateDepedencies (type, state) {
+  const deps = (state.get('allDependencies') || {})[type]
+  if (!deps) {
+    return null
+  }
+  return Object.keys(deps).reduce((packageDeps, packageName) => {
+    const range = semver.intersection(...(deps[packageName]))
+    try {
+      packageDeps[packageName] = range.simplify().toString()
+    } catch (e) {
+      if (e instanceof semver.EmptyIntersectionError) {
+        throw new Error(`Invalid combination of version constraints for package ${packageName} led to no valid versions: ${range.toString()}`)
+      }
+    }
+    return packageDeps
+  }, {})
+}
+
+function addPackageDependencies (packageData, type, state) {
+  const deps = generateDepedencies(type, state)
+  if (deps) {
+    packageData[type] = deps
+  }
+}
+
 export function converge ({state, config, resource}) {
   // Set default package data in stack state.
   resource('NpmPackageName')(config('project.name'))
@@ -61,18 +84,8 @@ export function converge ({state, config, resource}) {
 
   const configGetter = () => {
     const initialConfig = {}
-    const allDeps = state.get('allDependencies')
-    if (allDeps) {
-      const deps = allDeps.dependencies
-      if (deps) {
-        initialConfig.dependencies = deps
-      }
-
-      const devDeps = allDeps.devDependencies
-      if (devDeps) {
-        initialConfig.devDependencies = devDeps
-      }
-    }
+    addPackageDependencies(initialConfig, 'dependencies', state)
+    addPackageDependencies(initialConfig, 'devDependencies', state)
     return (state.get('configMergeOperations') || []).reduce((config, {path, value}) => {
       const addOn = {}
       set(addOn, path, value)
