@@ -5,8 +5,10 @@
 import {opolTest} from '../../../test-util'
 import chai, {expect} from 'chai'
 import sinonChai from 'sinon-chai'
+import chaiAsPromised from 'chai-as-promised'
 
 chai.use(sinonChai)
+chai.use(chaiAsPromised)
 
 describe('the npm stack', () => {
   it('should generate a package.json file', () => {
@@ -93,6 +95,20 @@ describe('the npm stack', () => {
           expect(packageData).to.have.property('dependencies')
           expect(packageData.dependencies).to.have.property(PACKAGE_NAME, PACKAGE_VERSION)
         })
+    })
+
+    it('should throw an error if conflicting package versions are specified', () => {
+      // given
+      const PACKAGE_NAME = 'some-package'
+
+      // Expect
+      return expect(opolTest()
+        .withStack('npm')
+        .withExerciser(({resource}) => {
+          resource('NpmDependency')(PACKAGE_NAME, '<1.0.0')
+          resource('NpmDependency')(PACKAGE_NAME, '>1.0.0')
+        })
+        .testConverge()).to.be.rejectedWith(/<1.0.0, >1.0.0/)
     })
 
     it('should form an intersection of specified version constraints when the same dependency is added multiple times.', () => {

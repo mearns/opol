@@ -56,12 +56,12 @@ function generateDepedencies (type, state) {
     return null
   }
   return Object.keys(deps).reduce((packageDeps, packageName) => {
-    const range = semver.intersection(...(deps[packageName]))
     try {
+      const range = semver.intersection(...(deps[packageName]))
       packageDeps[packageName] = range.simplify().toString()
     } catch (e) {
       if (e instanceof semver.EmptyIntersectionError) {
-        throw new Error(`Invalid combination of version constraints for package ${packageName} led to no valid versions: ${range.toString()}`)
+        throw new Error(`Conflicting version constraints for package ${packageName}: ${deps[packageName].join(', ')}`)
       }
     }
     return packageDeps
