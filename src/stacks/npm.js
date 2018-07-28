@@ -161,9 +161,9 @@ export function converge ({state, config, resource}) {
     }, initialConfig)
   }
 
-  const jsonFile = resource('JsonFile')
-  jsonFile({
+  resource('JsonFile')({
     path: 'package.json',
-    contentBody: configGetter
+    contentBody: configGetter,
+    mode: 0o444
   })
 }

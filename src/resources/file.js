@@ -11,7 +11,7 @@ export class File extends Resource {
     this.mkdirp = mkdirp
   }
 
-  prepAndValidateInstance ({path, content}) {
+  prepAndValidateInstance ({path, content, mode = 0o666}) {
     const fileState = this.state.get('file') || {}
     const dirState = fileState.createDirs || {}
     const fileWriteState = fileState.write || {}
@@ -19,7 +19,7 @@ export class File extends Resource {
     const absPath = pathUtil.resolve(path)
     const dir = pathUtil.dirname(absPath)
     dirState[dir] = true
-    fileWriteState[absPath] = {content, dir}
+    fileWriteState[absPath] = {content, dir, mode}
 
     fileState.write = fileWriteState
     fileState.createDirs = dirState
@@ -38,10 +38,10 @@ export class File extends Resource {
 
     const promiseForAllDirs = Promise.all(Object.values(dirPromiseCatalog))
 
-    const promiseForAllFiles = Promise.map(Object.entries(fileWriteState), ([path, {content: _content, dir}]) => {
+    const promiseForAllFiles = Promise.map(Object.entries(fileWriteState), ([path, {content: _content, mode, dir}]) => {
       const content = (typeof _content === 'function') ? _content() : _content
       return dirPromiseCatalog[dir]
-        .then(() => this.writeFile(path, content))
+        .then(() => this.writeFile(path, content, {mode}))
     })
 
     return Promise.join(promiseForAllDirs, promiseForAllFiles, () => {})

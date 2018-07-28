@@ -4,6 +4,7 @@
 // Support
 import {opolTest} from '../../../test-util'
 import chai, {expect} from 'chai'
+import sinon from 'sinon'
 import sinonChai from 'sinon-chai'
 import chaiAsPromised from 'chai-as-promised'
 
@@ -17,7 +18,7 @@ describe('the npm stack', () => {
     const TEST_PROJECT_VERSION_STRING = '1.2.3'
 
     // Expect
-    opolTest()
+    return opolTest()
       .withStack('npm')
       .withConfig('project.name', TEST_PROJECT_NAME)
       .withConfig('project.version', TEST_PROJECT_VERSION_STRING)
@@ -26,6 +27,21 @@ describe('the npm stack', () => {
         const packageData = fs.readJsonSync('./package.json')
         expect(packageData).to.have.property('name', TEST_PROJECT_NAME)
         expect(packageData).to.have.property('version', TEST_PROJECT_VERSION_STRING)
+      })
+  })
+
+  it('should creat the package.json file as readonly', () => {
+    return opolTest()
+      .withStack('npm')
+      .testConverge()
+      .then(({stubbedFileResource}) => {
+        expect(stubbedFileResource.writeFileStub).to.have.been.calledOnceWith(
+          sinon.match(/package.json$/),
+          sinon.match.any,
+          sinon.match({
+            mode: 0o444
+          })
+        )
       })
   })
 
