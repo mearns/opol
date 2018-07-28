@@ -107,6 +107,9 @@ class Opol {
       }
       return hack[name]
     }
+    resource.exists = (name) => {
+      return Boolean(this._resources[name])
+    }
 
     // Create shared state for each stack.
     const stateAPIFactoriesByStackId = {}
