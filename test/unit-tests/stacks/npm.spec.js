@@ -151,5 +151,24 @@ describe('the npm stack', () => {
           expect(packageData.scripts).to.have.property(SCRIPT_NAME, SCRIPT_VALUE)
         })
     })
+
+    it('should create parent scripts', () => {
+      // expect
+      return opolTest()
+        .withStack('npm')
+        .withExerciser(({resource}) => {
+          resource('NpmScript')('foo:bar:baz', 'baz script')
+          resource('NpmScript')('foo:bar:trot', 'trot script')
+        })
+        .testConverge()
+        .then(({fs}) => {
+          const packageData = fs.readJsonSync('./package.json')
+          expect(packageData).to.have.property('scripts')
+          expect(packageData.scripts).to.have.property('foo', 'npm run foo:bar')
+          expect(packageData.scripts).to.have.property('foo:bar', 'npm run foo:bar:baz && npm run foo:bar:trot')
+          expect(packageData.scripts).to.have.property('foo:bar:baz', 'baz script')
+          expect(packageData.scripts).to.have.property('foo:bar:trot', 'trot script')
+        })
+    })
   })
 })

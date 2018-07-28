@@ -5,10 +5,19 @@ import * as semver from '../util/semver-util'
 class NpmScript extends Resource {
   prepAndValidateInstance (name, script) {
     const scripts = this.state.get('scripts') || {}
-    if (scripts[name] && scripts[name] !== script) {
-      throw new Error(`Conflicting script specified for ${name}`)
-    }
-    scripts[name] = script
+    const comps = name.split(':')
+    const leafNode = comps.reduce((parent, comp) => {
+      if (parent.kids && parent.kids[comp]) {
+        if (parent.kids[comp].script) {
+          throw new Error(`Script already specified for "${name}"`)
+        }
+      } else {
+        parent.kids = parent.kids || {}
+        parent.kids[comp] = {}
+      }
+      return parent.kids[comp]
+    }, scripts)
+    leafNode.script = script
     this.state.set('scripts', scripts)
   }
 }
@@ -63,7 +72,40 @@ export function provideResources (provide) {
 }
 
 function generateScripts (state) {
-  return state.get('scripts') || null
+  const rootNode = state.get('scripts')
+  if (rootNode) {
+    return generateScriptsFromNode(rootNode, []).reduce((obj, {name, script}) => {
+      obj[name] = script
+      return obj
+    }, {})
+  }
+  return null
+}
+
+function generateScriptsFromNode (node, path) {
+  if (node.kids) {
+    return Object.keys(node.kids).reduce((scripts, scriptName) => {
+      const childNode = node.kids[scriptName]
+      const childPath = [...path, scriptName]
+      if (childNode.script) {
+        scripts.push({
+          name: childPath.join(':'),
+          script: childNode.script
+        })
+      } else if (childNode.kids) {
+        scripts.push({
+          name: childPath.join(':'),
+          script: Object.keys(childNode.kids)
+            .map(name => [...childPath, name].join(':'))
+            .map(script => `npm run ${script}`)
+            .join(' && ')
+        })
+        scripts.push(...generateScriptsFromNode(childNode, childPath))
+      }
+      return scripts
+    }, [])
+  }
+  return []
 }
 
 function addScripts (packageData, state) {
