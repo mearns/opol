@@ -131,4 +131,25 @@ describe('the npm stack', () => {
         })
     })
   })
+
+  describe('The NpmScript resource', () => {
+    it('should add the specified scripts to the package.json file', () => {
+      // given
+      const SCRIPT_NAME = 'my-script-name-123'
+      const SCRIPT_VALUE = 'run some commands 78910'
+
+      // expect
+      return opolTest()
+        .withStack('npm')
+        .withExerciser(({resource}) => {
+          resource('NpmScript')(SCRIPT_NAME, SCRIPT_VALUE)
+        })
+        .testConverge()
+        .then(({fs}) => {
+          const packageData = fs.readJsonSync('./package.json')
+          expect(packageData).to.have.property('scripts')
+          expect(packageData.scripts).to.have.property(SCRIPT_NAME, SCRIPT_VALUE)
+        })
+    })
+  })
 })
