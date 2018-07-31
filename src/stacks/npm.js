@@ -147,7 +147,7 @@ export function converge ({state, config, resource}) {
 
   state.set('allDependencies', {})
 
-  const configGetter = () => {
+  const packageDataGenerator = () => {
     const initialConfig = {}
 
     addPackageDependencies(initialConfig, 'dependencies', state)
@@ -161,9 +161,13 @@ export function converge ({state, config, resource}) {
     }, initialConfig)
   }
 
+  if (resource.exists('VcsIgnore')) {
+    resource('VcsIgnore')('package.json')
+  }
+
   resource('JsonFile')({
     path: 'package.json',
-    contentBody: configGetter,
+    contentBody: packageDataGenerator,
     mode: 0o444
   })
 }

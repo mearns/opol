@@ -65,7 +65,7 @@ class OpolTest {
     mock.prototype.prepAndValidateInstance = spy
     mock.prototype.constructor = mock
     this._api.resourceSpys[name] = spy
-    return this.withMockResource({name, mock})
+    return this.withMockResource(name, mock)
   }
 
   /**

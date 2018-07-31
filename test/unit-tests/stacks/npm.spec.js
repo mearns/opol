@@ -45,6 +45,16 @@ describe('the npm stack', () => {
       })
   })
 
+  it('should ignore the package.json file through the VcsIgnore resource', () => {
+    return opolTest()
+      .withStack('npm')
+      .withResourceSpy('VcsIgnore')
+      .testConverge()
+      .then(api => {
+        expect(api.resourceSpys.VcsIgnore).to.have.been.calledOnceWith('package.json')
+      })
+  })
+
   describe('NpmPackageName resource', () => {
     it('should configure the name property in the generated package.json file', () => {
       // given
