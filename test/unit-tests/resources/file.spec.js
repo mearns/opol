@@ -23,7 +23,7 @@ describe('the file resource', () => {
       fileResource({path: TEST_PATH, content: TEST_CONTENT})
     }).then(({stubbedFileResource: {mkdirpStub, writeFileStub}}) => {
       expect(mkdirpStub).to.have.been.calledOnceWithExactly(EXPECTED_DIR)
-      expect(writeFileStub).to.have.been.calledOnceWithExactly(EXPECTED_PATH, TEST_CONTENT)
+      expect(writeFileStub).to.have.been.calledOnceWith(EXPECTED_PATH, TEST_CONTENT)
     })
   })
 
@@ -42,7 +42,7 @@ describe('the file resource', () => {
       fileResource({path: TEST_PATH, content: TEST_CONTENT_FINAL})
     }).then(({stubbedFileResource: {writeFileStub}}) => {
       expect(writeFileStub).to.have.been.calledOnce
-      expect(writeFileStub).to.have.been.calledWithExactly(EXPECTED_PATH, TEST_CONTENT_FINAL)
+      expect(writeFileStub).to.have.been.calledWith(EXPECTED_PATH, TEST_CONTENT_FINAL)
     })
   })
 
