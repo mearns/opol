@@ -132,19 +132,22 @@ class Opol {
 
     // Run executions for all resource usages.
     stage = 'execution'
-    const resourcePromises = {}
+    const resourceExecuted = {}
+    const resourceOrder = []
+    let allUsagePromises = Promise.resolve()
     resourceUsages.forEach(([name, res, args]) => {
-      if (!resourcePromises[name]) {
-        resourcePromises[name] = Promise.method(res.beforeExecute).bind(res)()
+      if (!resourceExecuted[name]) {
+        resourceExecuted[name] = true
+        resourceOrder.push(res)
+        allUsagePromises = allUsagePromises.then(() => Promise.method(res.beforeExecute).bind(res)())
       }
-      // XXX: FIXME: Resources need to execute in the order they were given, relative to other resources as well.
-      resourcePromises[name] = resourcePromises[name].then(() => res.executeInstance(...args))
+      allUsagePromises = allUsagePromises.then(() => res.executeInstance(...args))
     })
 
     // Wait for all executions to complete.
-    return Promise.map(Object.keys(resourcePromises), name => {
-      return resourcePromises[name].then(() => resources[name].afterExecute())
-    })
+    return resourceOrder.reduce((p, res) => {
+      return p.then(() => res.afterExecute())
+    }, allUsagePromises)
   }
 
   loadStack (spec) {
