@@ -137,11 +137,14 @@ class Opol {
       if (!resourcePromises[name]) {
         resourcePromises[name] = Promise.method(res.beforeExecute).bind(res)()
       }
+      // XXX: FIXME: Resources need to execute in the order they were given, relative to other resources as well.
       resourcePromises[name] = resourcePromises[name].then(() => res.executeInstance(...args))
     })
 
     // Wait for all executions to complete.
-    return Promise.map(Object.keys(resourcePromises), name => resources[name].afterExecute())
+    return Promise.map(Object.keys(resourcePromises), name => {
+      return resourcePromises[name].then(() => resources[name].afterExecute())
+    })
   }
 
   loadStack (spec) {
