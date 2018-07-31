@@ -26,7 +26,7 @@ export class File extends Resource {
     this.state.set('file', fileState)
   }
 
-  afterExecute () {
+  beforeExecute () {
     const fileState = this.state.get('file') || {}
     const dirState = fileState.createDirs || {}
     const fileWriteState = fileState.write || {}

@@ -50,19 +50,18 @@ describe('the file resource', () => {
     // given
     const TEST_PATH = 'rel/path/to/file.ext'
     const EXPECTED_PATH = path.resolve(TEST_PATH)
-    const EXPECTED_CONTENT = 'this is the expected content'
+    const EXPECTED_CONTENT = 'This resource was used 2 times'
     class TestResource extends Resource {
       constructor (api) {
         super(api)
+        this._usageCount = 0
         this._content = 'this is the wrong content'
+        this._contentGenerator = () => `This resource was used ${this._usageCount} times`
       }
 
       prepAndValidateInstance () {
-        this.resource('File')({path: TEST_PATH, content: () => this._content})
-      }
-
-      executeInstance () {
-        this._content = EXPECTED_CONTENT
+        this.resource('File')({path: TEST_PATH, content: this._contentGenerator})
+        this._usageCount++
       }
     }
 
@@ -72,6 +71,7 @@ describe('the file resource', () => {
       opolTest => {
         opolTest.withMockResource('--test-resource--', TestResource)
         opolTest.withExerciser(({resource}) => {
+          resource('--test-resource--')()
           resource('--test-resource--')()
         })
       }

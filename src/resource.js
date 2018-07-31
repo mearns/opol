@@ -1,4 +1,11 @@
 
+/**
+ * The contract for a resource is that it should not make any permanent changes to the host
+ * system in the prepAndValidateInstance, and that all state changes to the host are complete
+ * by the time the `executeInstance` method is called. This means that `beforeExecute` can
+ * be an appropriate place to make host changes as well, and `afterExecute` is typically used
+ * for post verification.
+ */
 export class Resource {
   constructor (api) {
     this.state = api.state
