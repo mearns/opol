@@ -111,6 +111,7 @@
     "bluebird": "3.5.1",
     "fs-extra": "7.0.0",
     "lodash.get": "4.4.2",
+    "lodash.pick": "4.4.0",
     "mz": "2.7.0",
     "semver": "5.5.0",
     "set": "1.1.1"
