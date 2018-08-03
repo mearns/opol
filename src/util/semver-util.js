@@ -1,4 +1,5 @@
 import semver from 'semver'
+require('babel-polyfill')
 
 export function range (expression) {
   if (expression instanceof _Range) {
@@ -129,7 +130,13 @@ class _ComparatorSet {
   }
 }
 
-export class EmptyIntersectionError extends Error {}
+export class EmptyIntersectionError extends Error {
+  constructor (...args) {
+    super(...args)
+    this.name = this.constructor.name
+    Error.captureStackTrace(this, this.constructor)
+  }
+}
 
 class _Comparator {
   constructor (version) {
