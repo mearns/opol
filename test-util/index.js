@@ -1,6 +1,7 @@
 import * as opol from '../src'
 import sinon from 'sinon'
 import {File} from '../src/resources/file'
+import {Command} from '../src/resources/command'
 import {Resource} from '../src/resource'
 import set from 'lodash.set'
 import {Volume} from 'memfs'
@@ -18,7 +19,8 @@ class OpolTest {
       stacks: []
     }
     this._useMocks = {
-      file: true
+      file: true,
+      command: true
     }
     this._api = {
       resourceSpys: {}
@@ -122,6 +124,11 @@ class OpolTest {
     return this
   }
 
+  withoutStubbedCommandResource () {
+    this._useMocks.command = false
+    return this
+  }
+
   /**
    * Runs `opol.converge` with the established configuration, mocked resources,
    * stacks, and exerciser stacks. Returns a promise that fulfills from the converge,
@@ -149,6 +156,23 @@ class OpolTest {
       this._api.resourceSpys['File'] = spy
       this._api.stubbedFileResource = {writeFileStub, mkdirpStub}
       this._api.fs = {...shadowFs, readJsonSync: (...args) => JSON.parse(shadowFs.readFileSync(...args))}
+    }
+
+    if (this._useMocks.command) {
+      const mockSpawn = sinon.stub().returns(Promise.resolve())
+      const spy = sinon.spy()
+      class StubbedCommandResource extends Command {
+        constructor (api) {
+          super(api, {spawn: mockSpawn})
+        }
+        prepAndValidateInstance (...args) {
+          spy(...args)
+          super.prepAndValidateInstance(...args)
+        }
+      }
+      this.withMockResource('Command', StubbedCommandResource)
+      this._api.resourceSpys['Command'] = spy
+      this._api.stubbedCommandResource = {spawn: mockSpawn}
     }
 
     return opol.converge(

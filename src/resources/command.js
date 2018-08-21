@@ -1,6 +1,6 @@
 import {Resource} from '../resource'
 import Promise from 'bluebird'
-import ChildProcess from 'child_process'
+import childProcess from 'child_process'
 require('babel-polyfill')
 
 /**
@@ -43,9 +43,14 @@ class CommandExecutionError extends Error {
  * returns a promise that settles based on the results of the process execution.
  */
 export class Command extends Resource {
+  constructor (api, {spawn = childProcess.spawn}) {
+    super(api)
+    this.spawn = spawn
+  }
+
   executeInstance (commandArgs, childProcessOptions) {
     const [command, ...args] = commandArgs
-    const process = ChildProcess.spawn(command, args, childProcessOptions)
+    const process = this.spawn(command, args, childProcessOptions)
 
     return new Promise((resolve, reject) => {
       process.on('error', cause => {

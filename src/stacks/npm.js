@@ -170,4 +170,6 @@ export function converge ({state, config, resource}) {
     contentBody: packageDataGenerator,
     mode: 0o444
   })
+
+  resource('Command')(['npm', 'install'])
 }
